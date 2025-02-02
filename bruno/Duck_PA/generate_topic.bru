@@ -1,0 +1,15 @@
+meta {
+  name: generate_topic
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://localhost:8000/generate_topic
+  body: json
+  auth: none
+}
+
+body:json {
+  {"text":"I am interested to learn about fractions and operations with fractions and semplification"}
+}

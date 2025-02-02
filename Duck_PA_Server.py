@@ -1,60 +1,45 @@
 from typing import Union
 from fastapi import FastAPI
-from ollama import chat
-from ollama import ChatResponse
+import google.generativeai as genai
 from pydantic import BaseModel
 from typing import List
+import os
 
-#app = FastAPI()
+class ClassTeacher:
+    def __init__(self, id,  name, specialization, attitude):
+        self.id = id
+        self.name = name
+        self.specialization = specialization
+        self.attitude = attitude
 
-first_message={}
+app = FastAPI()
 
-def ask_AI(text: str):
-    response: ChatResponse = chat(model='llama3.2:latest', messages=[
-        {
-            "role": "user",
-            "content": text,
-        },
-    ])
+auth_token = os.getenv("GEMINI_AUTH_TOKEN")  # Get the authentication token from an environment variable
+genai.configure(api_key=auth_token)
+model = genai.GenerativeModel("gemini-1.5-flash")
 
-    return response["message"]["content"]
+class_teacher1 = ClassTeacher(1, "William Thompson", ["Mathematics", "Geometry"], "Calm")
+class_teacher2 = ClassTeacher(2, "Rachel Green", ["Physics", "Chemistry"], "Strict")
+class_teacher3 = ClassTeacher(3, "Albert Taylor", ["Biology", "Geology"], "Friendly")
 
+class_teachers = [class_teacher1, class_teacher2, class_teacher3]
 
-#@app.get("/")
+@app.get("/get_teachers")
+def get_teachers():
+    return {"teachers": class_teachers}
+
+@app.post("/generate_topic")
+def generate_topic(text: str):
+    #here you need to write the code to start to ask in an iterative 
+    #way details about the topics that the student want to study 
+    return {"text": "blabla"}
+
+@app.post("/generate_test")
+def generate_test(text: str):
+    #here you need to write the code to start to ask in an iterative 
+    #way details about the topics that the student want to study 
+    return {"text": "blabla"}
+
+@app.get("/")
 def read_root():
     return {"Welcome": "to the AI"}
-
-
-#@app.get("/create_profile/{name}")
-def create_profile(name: str):
-    message=f"You are an AI assistant that now will be used to allow students to learn particular topics. You are talking to the student and he is called {name}. Our plan is the following, we will first ask questions to create his profile. You want to assess his degree level, age and other information that is pertinent to students. Once you are done creating the profile, you are going to reply with a full summary of the profile that can be used for next steps. Now ask questions one by one and after each question the student is going to profile the answer. Once you are ready, reply with the message <EOP> the summary of the profile <EOP>. You are going to ask at most 5 questions."
-
-    first_message[name] = message
-
-    return {"text": ask_AI(message)}
-
-class ProfileContinuation(BaseModel):
-    name: str
-    messages: List[str]
-
-
-#@app.post("/continue_profile_creation")
-def continue_profile_creation(data: ProfileContinuation):
-    if data.name not in first_message:
-        return {"error": "unknown user"}
-
-    messages=[{
-            "role": "user",
-            "content": first_message[data.name],
-        }]
-
-    for i in data.messages:
-        messages.append({
-            "role": "user",
-            "content": i,
-        })
-
-    print(messages)
-    response: ChatResponse = chat(model='llama3.2:latest', messages=messages)
-
-    return {"question": response["message"]["content"]}
