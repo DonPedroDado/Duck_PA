@@ -43,6 +43,8 @@ teachers = [teacher1, teacher2, teacher3]
 def get_teachers():
     teachers_data = [t.to_dict() for t in teachers]
     return jsonify({"teachers": teachers_data})
+
+
 @app.route("/", methods=["GET"])
 def homepage():
     """
@@ -152,7 +154,7 @@ def homepage():
     """
 
 
-def ask_AI_for_text(teacher_type, topic, test_type):
+def ask_AI_for_test(teacher_type, topic, test_type):
     """
     This function simulates a call to Gemini AI to create a test.
     In a real scenario, you'd replace this with the actual call to the AI system,
@@ -254,7 +256,7 @@ def generate_test():
         teacher_name = selected_teacher.name
 
     # Call the mock AI function to get the test structure
-    ai_test_data = ask_AI_for_text(teacher_type, topic, test_type)
+    ai_test_data = ask_AI_for_test(teacher_type, topic, test_type)
 
     # Now we convert that structured data into HTML
     # We'll do a simple conversion based on the question types
