@@ -48,7 +48,6 @@ def continue_profile_creation(data: ProfileContinuation):
             "content": first_message[data.name],
         }]
 
-    
     for i in data.messages:
         messages.append({
             "role": "user",
