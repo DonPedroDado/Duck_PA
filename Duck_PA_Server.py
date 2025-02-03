@@ -31,7 +31,7 @@ app = Flask(__name__)
 
 auth_token = os.getenv("GEMINI_AUTH_TOKEN")  # Get the authentication token from an environment variable
 genai.configure(api_key=auth_token)
-model = genai.GenerativeModel("gemini-1.5-flash")
+model = genai.GenerativeModel("gemini-2.0-exp")
 
 teacher1 = ClassTeacher(1, "William Thompson", ["Mathematics", "Geometry"], "Calm")
 teacher2 = ClassTeacher(2, "Rachel Green", ["Physics", "Chemistry"], "Strict")
@@ -44,6 +44,11 @@ def get_teachers():
     teachers_data = [t.to_dict() for t in teachers]
     return jsonify({"teachers": teachers_data})
 
+def ask_AI(text: str):
+    message=""
+    model=genai.GenerativeModel("gemini-2.0-exp")
+    response = model.generate_content(text)
+    return response.text["content"]
 
 @app.route("/", methods=["GET"])
 def homepage():
@@ -171,6 +176,8 @@ def ask_AI_for_test(teacher_type, topic, test_type):
     #   on the topic "{topic}".
     #   Return the test in a JSON structure with a list of questions, etc.
     # """
+
+    message=f"You are an AI assistant that helps students to learn {topic}. You have to make questions with type {test_type}. This is your personality {teacher_type}"
 
     # For illustration, we'll return a dummy JSON structure with
     # a single question that changes slightly based on the test_type.
