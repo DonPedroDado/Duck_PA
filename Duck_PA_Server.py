@@ -44,11 +44,22 @@ def get_teachers():
     teachers_data = [t.to_dict() for t in teachers]
     return jsonify({"teachers": teachers_data})
 
-def ask_AI(text: str):
-    message=""
-    model=genai.GenerativeModel("gemini-2.0-exp")
-    response = model.generate_content(text)
-    return response.text["content"]
+def get_teacher_by_ID(teacher_ID):
+    for teacher in teachers:
+        if teacher.ID == teacher_ID:
+            return teacher
+    return None 
+
+def ask_AI(topic: str, teacher_ID: int, question_type: str):
+    teacher = get_teacher_by_ID(teacher_ID)
+    
+    if teacher is None:
+        return "Teacher ID not found."
+
+    model = genai.GenerativeModel('gemini-2.0-exp')
+    message="You are an AI assistant that helps students learn topics. You must make questions for them. You are {teacher}. The type of the question is {question_type}. The topic is {topic}."
+    response = model.generate_content()
+
 
 @app.route("/", methods=["GET"])
 def homepage():
@@ -176,8 +187,6 @@ def ask_AI_for_test(teacher_type, topic, test_type):
     #   on the topic "{topic}".
     #   Return the test in a JSON structure with a list of questions, etc.
     # """
-
-    message=f"You are an AI assistant that helps students to learn {topic}. You have to make questions with type {test_type}. This is your personality {teacher_type}"
 
     # For illustration, we'll return a dummy JSON structure with
     # a single question that changes slightly based on the test_type.
