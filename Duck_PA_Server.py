@@ -1,10 +1,17 @@
-from typing import Union
 import google.generativeai as genai
 from pydantic import BaseModel
-from typing import List
 import os
 from flask import Flask, request, jsonify
+import json
 
+class Question(BaseModel):
+    question: str
+    type: str
+    options: list[str]
+    correct_answer: str
+
+class QuestionsList(BaseModel):
+    questions: list[Question]
 
 class ClassTeacher:
     def __init__(self, id, name, specialization, attitude):
@@ -29,11 +36,11 @@ class ClassTeacher:
 app = Flask(__name__)
 
 
-auth_token = os.getenv("GEMINI_AUTH_TOKEN")  # Get the authentication token from an environment variable
+auth_token = os.getenv("GEMINI_API_KEY")  # Get the authentication token from an environment variable
 genai.configure(api_key=auth_token)
-model = genai.GenerativeModel("gemini-2.0-exp")
+model = genai.GenerativeModel("gemini-1.5-flash")
 
-teacher1 = ClassTeacher(1, "William Thompson", ["Mathematics", "Geometry"], "Calm")
+teacher1 = ClassTeacher(1, "William Thompson", ["Mathematics", "Computer science"], "Calm")
 teacher2 = ClassTeacher(2, "Rachel Green", ["Physics", "Chemistry"], "Strict")
 teacher3 = ClassTeacher(3, "Albert Taylor", ["Biology", "Geology"], "Friendly")
 
@@ -44,21 +51,213 @@ def get_teachers():
     teachers_data = [t.to_dict() for t in teachers]
     return jsonify({"teachers": teachers_data})
 
-def get_teacher_by_ID(teacher_ID):
-    for teacher in teachers:
-        if teacher.ID == teacher_ID:
-            return teacher
-    return None 
+def ask_AI(topic: str, teacher: ClassTeacher, question_type: str):
+    # model is already initialized globally
+    message = (
+        f"You must make questions for them. You are teacher called {teacher.name}. "
+        f"Your specializations are {', '.join(teacher.specialization)} and your attitude is {teacher.attitude}. "
+        f"I want you to create a test about the following topic: {topic}. "
+        f"The type of the question is {question_type}."
+    )
+    if question_type == "Multiple Choice Tests":
+        message += "You are going to create a Multiple Choice Test. I want you to create 10 questions and for each question to provide 4 possible answers. One is correct, one is almost correct, the other one is neutral and one is clearly wrong."
+        message += """I want you to return the result as a JSON. The schema of the JSON should be the following: questions": [
+                {
+                    "question": "Sample Multiple Choice Question 1",
+                    "type": "multiple_choice",
+                    "options": ["Option A", "Option B", "Option C", "Option D"],
+                    "correct_answer": "Option A",
+                    "explanation": "Option A is correct because..."
+                },
+                {
+                    "question": "Another question",
+                    "type": "multiple_choice",
+                    "options": ["Option A", "Option B", "Option C", "Option D"],
+                    "correct_answer": "Option A",
+                    "explanation": "Option A is correct because..."
+                }
+            ]"""
+        message += "You are going to reply only if the JSON described above and NOTHING ELSE"
 
-def ask_AI(topic: str, teacher_ID: int, question_type: str):
-    teacher = get_teacher_by_ID(teacher_ID)
+    elif question_type == "True/False Tests":
+        message += "You are going to create a True/False Test. I want you to create 10 questions. Each question should have a sentence and the answer should be either True or False. I want you to return the result as a JSON. The schema of the JSON should be the following:"
+        message += """questions": [
+                {
+                    "question": "Sample True/False Question 1: The capital of France is Paris.",
+                    "type": "true_false",
+                    "correct_answer": "True",
+                    "explanation": "Paris is the capital of France."
+                },
+                {
+                    "question": "Another True/False Question: The capital of Italy is Rome.",
+                    "type": "true_false",
+                    "correct_answer": "True",
+                    "explanation": "Rome is the capital of Italy."
+                }
+            ]"""
+        message += "You are going to reply only if the JSON described above and NOTHING ELSE"
+
+    elif question_type == "Fill-in-the-Blank Tests":
+        message += "You are going to create a Fill-in-the-Blank Test. I want you to create 10 questions. Each question should have a sentence with a blank space. I want you to return the result as a JSON. The schema of the JSON should be the following:"
+        message += """questions": [
+                {
+                    "question": "Sample Fill-in-the-Blank Question 1: The capital of France is __________.",
+                    "type": "fill_in_the_blank",
+                    "correct_answer": "Paris",
+                    "explanation": "Paris is the capital of France."
+                },
+                {
+                    "question": "Another Fill-in-the-Blank Question: The capital of Italy is __________.",
+                    "type": "fill_in_the_blank",
+                    "correct_answer": "Rome",
+                    "explanation": "Rome is the capital of Italy."
+                }
+            ]"""
+        message += "You are going to reply only if the JSON described above and NOTHING ELSE"
+
+    response = model.generate_content(message,
+                                      generation_config={
+                                          'response_mime_type': 'application/json',
+                                      },)
+
+    print(response)
+
+    try:
+        my_questions = response.text
+        my_questions_json = json.loads(my_questions).get("questions")
+        print(my_questions_json)
+        return my_questions_json
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
     
-    if teacher is None:
-        return "Teacher ID not found."
 
-    model = genai.GenerativeModel('gemini-2.0-exp')
-    message="You are an AI assistant that helps students learn topics. You must make questions for them. You are {teacher}. The type of the question is {question_type}. The topic is {topic}."
-    response = model.generate_content()
+@app.route("/delete_teacher/<int:teacher_id>", methods=["DELETE"])
+def delete_teacher(teacher_id):
+    """
+    Deletes a teacher by ID.
+    """
+    global teachers
+    teachers = [teacher for teacher in teachers if teacher.id != teacher_id]
+    return jsonify({"message": "Teacher deleted successfully"}), 200
+
+@app.route("/create_teacher", methods=["POST"])
+def create_teacher():
+    """
+    Accepts JSON with {first_name, last_name, specializations, attitude}
+    Adds a new teacher to the list of teachers.
+    """
+    data = request.get_json()
+    new_teacher = ClassTeacher(
+        id=len(teachers) + 1,
+        name=f"{data.get('first_name')} {data.get('last_name')}",
+        specialization=data.get("specializations"),
+        attitude=data.get("attitude")
+    )
+    teachers.append(new_teacher)
+    return jsonify({"message": "Teacher created successfully"}), 201
+
+@app.route("/add_teacher", methods=["GET"])
+def add_teacher_page():
+    """
+    Returns the page for adding a new teacher.
+    """
+    return """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Teacher</title>
+    <style>
+        .specialization-row {
+            display: flex;
+            align-items: center;
+        }
+        .specialization-row input {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Add a New Teacher</h1>
+    <form id="create-teacher-form" onsubmit="createTeacher(event)">
+        <div>
+            <label for="first-name">First Name:</label>
+            <input type="text" id="first-name" name="first-name" required>
+        </div>
+        <div>
+            <label for="last-name">Last Name:</label>
+            <input type="text" id="last-name" name="last-name" required>
+        </div>
+        <div id="specializations">
+            <label>Specializations:</label>
+            <div class="specialization-row">
+                <input type="text" name="specialization" required>
+                <button type="button" onclick="addSpecialization()">+</button>
+            </div>
+        </div>
+        <div>
+            <label>Attitude:</label>
+            <button type="button" onclick="setAttitude('Strict')">Strict</button>
+            <button type="button" onclick="setAttitude('Friendly')">Friendly</button>
+            <button type="button" onclick="setAttitude('Angry')">Angry</button>
+            <button type="button" onclick="setAttitude('Calm')">Calm</button>
+        </div>
+        <input type="hidden" id="attitude" name="attitude" required>
+        <button type="submit">Create Teacher</button>
+    </form>
+    <button onclick="window.location.href='/'">Go Back</button>
+    <script>
+        function addSpecialization() {
+            const specializationsDiv = document.getElementById('specializations');
+            const newRow = document.createElement('div');
+            newRow.className = 'specialization-row';
+            newRow.innerHTML = '<input type="text" name="specialization" required><button type="button" onclick="removeSpecialization(this)">-</button>';
+            specializationsDiv.appendChild(newRow);
+        }
+
+        function removeSpecialization(button) {
+            button.parentElement.remove();
+        }
+
+        function setAttitude(attitude) {
+            document.getElementById('attitude').value = attitude;
+        }
+
+        function createTeacher(event) {
+            event.preventDefault();
+            const form = document.getElementById('create-teacher-form');
+            const formData = new FormData(form);
+            const data = {
+                first_name: formData.get('first-name'),
+                last_name: formData.get('last-name'),
+                specializations: Array.from(formData.getAll('specialization')),
+                attitude: formData.get('attitude')
+            };
+
+            fetch('/create_teacher', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                window.location.href = '/';
+            })
+            .catch(err => {
+                console.error('Error creating teacher:', err);
+            });
+        }
+    </script>
+</body>
+</html>
+    """
+
+
+
+
 
 
 @app.route("/", methods=["GET"])
@@ -101,6 +300,7 @@ def homepage():
 
     <br>
     <button onclick="generateTest()">Generate Test</button>
+    <button onclick="window.location.href='/add_teacher'">Make Teacher</button>
 
     <script>
     // On page load, fetch the teachers and display them
@@ -118,6 +318,7 @@ def homepage():
                     <strong>Name:</strong> ${teacher.name}<br>
                     <strong>Specialization:</strong> ${teacher.specialization.join(', ')}<br>
                     <strong>Attitude:</strong> ${teacher.attitude}
+                    <button onclick="deleteTeacher(${teacher.id})">Delete</button>
                     <hr>
                 `;
                 teacherDiv.appendChild(teacherInfo);
@@ -164,81 +365,106 @@ def homepage():
             console.error('Error generating test:', err);
         });
     }
+
+    function deleteTeacher(teacherId) {
+        fetch(`/delete_teacher/${teacherId}`, {
+            method: 'DELETE'
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+            window.location.reload();
+        })
+        .catch(err => {
+            console.error('Error deleting teacher:', err);
+        });
+    }
     </script>
 </body>
 </html>
     """
 
+def ask_AI_for_test(teacher, topic, test_type):
+    response = ask_AI(topic=topic, teacher=teacher, question_type=test_type)
 
-def ask_AI_for_test(teacher_type, topic, test_type):
-    """
-    This function simulates a call to Gemini AI to create a test.
-    In a real scenario, you'd replace this with the actual call to the AI system,
-    sending `teacher_type`, `topic`, and `test_type` as part of your prompt or request.
-
-    Returns a JSON-like Python dictionary representing the generated test.
-    """
-
-    # Here we build the prompt (mocked). In a real integration,
-    # you might do something like: 
-    # prompt = f"""
-    #   Hello Gemini AI,
-    #   Please create a {test_type} test for a teacher of type "{teacher_type}" 
-    #   on the topic "{topic}".
-    #   Return the test in a JSON structure with a list of questions, etc.
-    # """
-
-    # For illustration, we'll return a dummy JSON structure with
-    # a single question that changes slightly based on the test_type.
     if test_type == "Multiple Choice Tests":
         return {
             "title": f"{test_type} on {topic}",
-            "teacher_type": teacher_type,
-            "questions": [
-                {
-                    "question": f"Sample Multiple Choice Question about {topic}",
-                    "type": "multiple_choice",
-                    "options": ["Option A", "Option B", "Option C", "Option D"],
-                    "correct_answer": "Option A"
-                },
-                                {
-                    "question": f"Another question about {topic}",
-                    "type": "multiple_choice",
-                    "options": ["Option A", "Option B", "Option C", "Option D"],
-                    "correct_answer": "Option A"
-                }
-            ]
+            "teacher_type": str(teacher),
+            "questions": response,
         }
     elif test_type == "True/False Tests":
         return {
             "title": f"{test_type} on {topic}",
-            "teacher_type": teacher_type,
-            "questions": [
-                {
-                    "question": f"Sample True/False statement about {topic}",
-                    "type": "true_false",
-                    "correct_answer": True
-                }
-            ]
+            "teacher_type": str(teacher),
+            "questions": response,
         }
     elif test_type == "Fill-in-the-Blank Tests":
         return {
             "title": f"{test_type} on {topic}",
-            "teacher_type": teacher_type,
-            "questions": [
-                {
-                    "question": f"Fill in the blank about {topic}",
-                    "type": "fill_in_the_blank",
-                    "correct_answer": "SAMPLE_ANSWER"
-                }
-            ]
+            "teacher_type": str(teacher),
+            "questions": response,
         }
     else:
         return {
             "title": f"Unknown Test Type on {topic}",
-            "teacher_type": teacher_type,
+            "teacher_type": str(teacher),
             "questions": []
         }
+    
+def check_Test(test_type: str, questions: list, answers: list):
+    feedback = []
+    all_correct = True
+    score = 0
+
+    if test_type == "Multiple Choice Tests":
+        for question, answer in zip(questions, answers):
+            correct_answer = question.get("correct_answer")
+            explanation = question.get("explanation", "No explanation provided.")
+            if correct_answer != answer:
+                all_correct = False
+                feedback.append({
+                    "question": question.get("question"),
+                    "your_answer": answer,
+                    "correct_answer": correct_answer,
+                    "explanation": explanation
+                })
+            else:
+                score += 1
+    elif test_type == "True/False Tests":
+        for question, answer in zip(questions, answers):
+            correct_answer = question.get("correct_answer")
+            explanation = question.get("explanation", "No explanation provided.")
+            if correct_answer != answer:
+                all_correct = False
+                feedback.append({
+                    "question": question.get("question"),
+                    "your_answer": answer,
+                    "correct_answer": correct_answer,
+                    "explanation": explanation
+                })
+            else:
+                score += 1
+    elif test_type == "Fill-in-the-Blank Tests":
+        for question, answer in zip(questions, answers):
+            correct_answer = question.get("correct_answer")
+            explanation = question.get("explanation", "No explanation provided.")
+            if correct_answer.lower() != answer.lower():  # Case insensitive comparison
+                all_correct = False
+                feedback.append({
+                    "question": question.get("question"),
+                    "your_answer": answer,
+                    "correct_answer": correct_answer,
+                    "explanation": explanation
+                })
+            else:
+                score += 1
+    else:
+        return False, [], 0
+
+    return all_correct, feedback, score
+
+
 
 @app.route("/generate_test", methods=["POST"])
 def generate_test():
@@ -253,7 +479,7 @@ def generate_test():
     teacher_id = data.get("teacher_id")
     topic = data.get("topic", "")
     test_type = data.get("test_type", "")
-
+    print(test_type)
     # Find the teacher object
     selected_teacher = None
     for t in teachers:
@@ -261,18 +487,8 @@ def generate_test():
             selected_teacher = t
             break
 
-    # Fallback if teacher not found
-    if not selected_teacher:
-        teacher_type = "Unknown"
-        teacher_name = "Unknown Teacher"
-    else:
-        # We'll pass something like the teacher's "attitude" or "specialization"
-        # as the "type" - you can modify as needed.
-        teacher_type = f"{selected_teacher.attitude} | {', '.join(selected_teacher.specialization)}"
-        teacher_name = selected_teacher.name
-
     # Call the mock AI function to get the test structure
-    ai_test_data = ask_AI_for_test(teacher_type, topic, test_type)
+    ai_test_data = ask_AI_for_test(selected_teacher, topic, test_type)
 
     # Now we convert that structured data into HTML
     # We'll do a simple conversion based on the question types
@@ -282,7 +498,7 @@ def generate_test():
     # Let's build the HTML content step by step
     test_content = f"""
     <h2>{title}</h2>
-    <p>Teacher: {teacher_name}</p>
+    <p>Teacher: {selected_teacher.name}</p>
     <hr>
     """
 
@@ -299,15 +515,18 @@ def generate_test():
                 options = q.get("options", [])
                 test_content += f"<p><strong>Question {idx}:</strong> {question_text}</p>\n<ul>"
                 for opt in options:
-                    test_content += f"<li><input type='radio' name='q{idx}'> {opt}</li>"
+                    test_content += f"<li><input type='radio' name='q{idx}' value='{opt}'> {opt}</li>"
                 test_content += "</ul><hr>"
             elif question_type == "true_false":
                 test_content += f"<p><strong>Question {idx}:</strong> {question_text}</p>\n"
-                test_content += f"<input type='radio' name='q{idx}'> True\n"
-                test_content += f"<input type='radio' name='q{idx}'> False\n<hr>"
+                test_content += f"<input type='radio' name='q{idx}' value='True'> True\n"
+                test_content += f"<input type='radio' name='q{idx}' value='False'> False\n<hr>"
             elif question_type == "fill_in_the_blank":
-                test_content += f"<p><strong>Question {idx}:</strong> {question_text}</p>\n"
-                test_content += f"<input type='text' name='q{idx}' style='width:300px;'><hr>"
+                # Replace each blank with an input box
+                blanks = question_text.count("__________")
+                for i in range(blanks):
+                    question_text = question_text.replace("__________", f"<input type='text' name='q{idx}_blank{i+1}' style='width:100px;'>", 1)
+                test_content += f"<p><strong>Question {idx}:</strong> {question_text}</p><hr>"
             else:
                 # If we don't recognize the question type
                 test_content += f"<p><strong>Question {idx} (Unknown type):</strong> {question_text}</p><hr>"
@@ -320,13 +539,149 @@ def generate_test():
     <title>Generated Test</title>
 </head>
 <body>
-    {test_content}
+    <form id="test-form" onsubmit="submitTest(event)">
+        {test_content}
+        <button type="submit">Submit Test</button>
+    </form>
+    <script>
+    function submitTest(event) {{
+        event.preventDefault();
+
+        // Gather the data
+        let testType = "{test_type}";
+        let questions = {questions};
+        let answers = [];
+
+        // Example of collecting answers
+        questions.forEach((question, idx) => {{
+            let answer;
+            if (question.type === "fill_in_the_blank") {{
+                answer = [];
+                let blanks = document.querySelectorAll(`input[name^='q${{idx + 1}}_blank']`);
+                blanks.forEach(blank => {{
+                    answer.push(blank.value);
+                }});
+                answers.push(answer.join(" "));
+            }} else {{
+                answer = document.querySelector(`input[name='q${{idx + 1}}']:checked`);
+                if (answer) {{
+                    answers.push(answer.value);
+                }} else {{
+                    let textAnswer = document.querySelector(`input[name='q${{idx + 1}}']`);
+                    if (textAnswer) {{
+                        answers.push(textAnswer.value);
+                    }}
+                }}
+            }}
+        }});
+
+        let payload = {{
+            test_type: testType,
+            questions: questions,
+            answers: answers
+        }};
+
+        fetch('/submit_test', {{
+            method: 'POST',
+            headers: {{
+                'Content-Type': 'application/json'
+            }},
+            body: JSON.stringify(payload)
+        }})
+        .then(response => response.json())
+        .then(data => {{
+            if (data.all_correct) {{
+                alert("All answers are correct!");
+            }} else {{
+                let feedbackHtml = "<h2>Feedback</h2><ul>";
+                data.feedback.forEach(item => {{
+                    feedbackHtml += `<li><strong>Question:</strong> ${{item.question}}<br><strong>Your Answer:</strong> ${{item.your_answer}}<br><strong>Correct Answer:</strong> ${{item.correct_answer}}<br><strong>Explanation:</strong> ${{item.explanation}}</li>`;
+                }});
+                feedbackHtml += `</ul><p><strong>Total Score:</strong> ${{data.score}} out of 10</p>`;
+                document.open();
+                document.write(feedbackHtml);
+                document.close();
+            }}
+        }})
+        .catch(err => {{
+            console.error('Error submitting test:', err);
+        }});
+    }}
+    </script>
     <hr>
     <button onclick="window.history.back()">Go Back</button>
 </body>
 </html>
     """
 
+
+def check_Test(test_type: str, questions: list, answers: list):
+    feedback = []
+    all_correct = True
+    score = 0
+
+    if test_type == "Multiple Choice Tests":
+        for question, answer in zip(questions, answers):
+            correct_answer = question.get("correct_answer")
+            explanation = question.get("explanation", "No explanation provided.")
+            if correct_answer != answer:
+                all_correct = False
+                feedback.append({
+                    "question": question.get("question"),
+                    "your_answer": answer,
+                    "correct_answer": correct_answer,
+                    "explanation": explanation
+                })
+            else:
+                score += 1
+    elif test_type == "True/False Tests":
+        for question, answer in zip(questions, answers):
+            correct_answer = question.get("correct_answer")
+            explanation = question.get("explanation", "No explanation provided.")
+            if correct_answer != answer:
+                all_correct = False
+                feedback.append({
+                    "question": question.get("question"),
+                    "your_answer": answer,
+                    "correct_answer": correct_answer,
+                    "explanation": explanation
+                })
+            else:
+                score += 1
+    elif test_type == "Fill-in-the-Blank Tests":
+        for question, answer in zip(questions, answers):
+            correct_answer = question.get("correct_answer")
+            explanation = question.get("explanation", "No explanation provided.")
+            if correct_answer.lower() != answer.lower():  # Case insensitive comparison
+                all_correct = False
+                feedback.append({
+                    "question": question.get("question"),
+                    "your_answer": answer,
+                    "correct_answer": correct_answer,
+                    "explanation": explanation
+                })
+            else:
+                score += 1
+    else:
+        return False, [], 0
+
+    return all_correct, feedback, score
+
+@app.route("/submit_test", methods=["POST"])
+def submit_test():
+    """
+    Accepts JSON with {test_type, questions, answers}
+    Returns a JSON response indicating if the answers are correct.
+    """
+    data = request.get_json()
+    test_type = data.get("test_type", "")
+    questions = data.get("questions", [])
+    answers = data.get("answers", [])
+
+    # Use the check_Test function to evaluate the answers
+    all_correct, feedback, score = check_Test(test_type, questions, answers)
+
+    return jsonify({"all_correct": all_correct, "feedback": feedback, "score": score})
 
 if __name__ == "__main__":
     app.run(debug=True)
