@@ -3,6 +3,7 @@ from pydantic import BaseModel
 import os
 from flask import Flask, request, jsonify
 import json
+import re
 
 class Question(BaseModel):
     question: str
@@ -43,8 +44,9 @@ model = genai.GenerativeModel("gemini-1.5-flash")
 teacher1 = ClassTeacher(1, "William Thompson", ["Mathematics", "Computer science"], "Calm")
 teacher2 = ClassTeacher(2, "Rachel Green", ["Physics", "Chemistry"], "Strict")
 teacher3 = ClassTeacher(3, "Albert Taylor", ["Biology", "Geology"], "Friendly")
+teacher4 = ClassTeacher(4, "Ira Abruzzo", ["English", "German", "Linguistics"], "Angry")
 
-teachers = [teacher1, teacher2, teacher3]
+teachers = [teacher1, teacher2, teacher3, teacher4]
 
 @app.route("/get_teachers", methods=["GET"])
 def get_teachers():
@@ -77,7 +79,7 @@ def ask_AI(topic: str, teacher: ClassTeacher, question_type: str):
                     "explanation": "Option A is correct because..."
                 }
             ]"""
-        message += "You are going to reply only if the JSON described above and NOTHING ELSE"
+        message += "You are going to reply only if the JSON described above and NOTHING ELSE. Make sure the question only have one possible answer."
 
     elif question_type == "True/False Tests":
         message += "You are going to create a True/False Test. I want you to create 10 questions. Each question should have a sentence and the answer should be either True or False. I want you to return the result as a JSON. The schema of the JSON should be the following:"
@@ -113,7 +115,7 @@ def ask_AI(topic: str, teacher: ClassTeacher, question_type: str):
                     "explanation": "Rome is the capital of Italy."
                 }
             ]"""
-        message += "You are going to reply only if the JSON described above and NOTHING ELSE"
+        message += "You are going to reply only if the JSON described above and NOTHING ELSE. Make sure that the excercises yoou maked are understandable and make sure that the excercises you make are specific for the topic. If the topic is something connected to grammar(like tenses, for example:past participle, simple part, and so on) make sure you put the infinitive form in brackets. Make sure to put a blank space in the place where the answer should be."       
 
     response = model.generate_content(message,
                                       generation_config={
@@ -522,10 +524,8 @@ def generate_test():
                 test_content += f"<input type='radio' name='q{idx}' value='True'> True\n"
                 test_content += f"<input type='radio' name='q{idx}' value='False'> False\n<hr>"
             elif question_type == "fill_in_the_blank":
-                # Replace each blank with an input box
-                blanks = question_text.count("__________")
-                for i in range(blanks):
-                    question_text = question_text.replace("__________", f"<input type='text' name='q{idx}_blank{i+1}' style='width:100px;'>", 1)
+                # Replace each blank with an input box using regex
+                question_text = re.sub(r"__________", lambda m, idx=idx: f"<input type='text' name='q{idx}_blank{m.start()}' style='width:100px;'>", question_text)
                 test_content += f"<p><strong>Question {idx}:</strong> {question_text}</p><hr>"
             else:
                 # If we don't recognize the question type
