@@ -140,23 +140,11 @@ def ask_AI(topic: str, teacher: ClassTeacher, question_type: str):
                                           'response_mime_type': 'application/json',
                                       },)
 
-    message2=(
-        f"This is the input I gave you before: {message}"
-        f"This is the output you gave me: {response}"
-        f"Check the output and fix the json. Like the questions and the explanations and so on."
-    )    
-
-    response2 = model.generate_content(message,
-                                    generation_config={
-                                        'response_mime_type': 'application/json',
-                                    },)
-
-    print(response2)
+    print(response)
 
     try:
         my_questions = response2.text
         my_questions_json = json.loads(my_questions).get("questions")
-        print(my_questions_json)
         return my_questions_json
     except Exception as e:
         print(f"Error: {e}")
