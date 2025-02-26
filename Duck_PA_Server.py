@@ -151,8 +151,6 @@ def ask_AI(topic: str, teacher: ClassTeacher, question_type: str):
                                         'response_mime_type': 'application/json',
                                     },)
 
-    print(response2)
-
     try:
         my_questions = response2.text
         my_questions_json = json.loads(my_questions).get("questions")
