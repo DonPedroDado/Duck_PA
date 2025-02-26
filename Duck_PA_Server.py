@@ -424,6 +424,19 @@ def check_Test(test_type: str, questions: list, answers: list):
     all_correct = True
     score = 0
 
+    message3=()
+
+    for i in zip(questions, answers):
+        for q in questions:
+            append_question = q.get("question")
+            message3.append(f"This is the question {i}: {append_question}")
+
+        for a in answers:
+            append_answer = a.get("answer")
+            message3.append(f"This is the answer {i}: {append_answer}")
+
+    messages3 += f"You got the questions and the answers to them. The number of a question mathes with number of an answer. Check if the answers are correct."
+
     if test_type == "Multiple Choice Tests":
         for question, answer in zip(questions, answers):
             correct_answer = question.get("correct_answer")
