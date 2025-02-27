@@ -447,9 +447,10 @@ def check_Test(test_type: str, questions: list, answers: list):
                 Respond to every question with a JSON. It should look like this:
 
                 {
-                    "questions": "the question",
+                    "question": "the question",
                     "answer": "answer the user gave to the question",
-                    "correct_answer": "the right answer"
+                    "correct_answer": "the right answer",
+                    "explanation": "explanation why the answer is wrong"
                 }
                 """
 
@@ -460,13 +461,16 @@ def check_Test(test_type: str, questions: list, answers: list):
     
     json_response=json.loads(response3.text)
 
-
+    print(json_response)
 
     if test_type == "Multiple Choice Tests":
         for i in json_response:
             correct_answer = json_response.get("correct_answer")
             explanation = json_response.get("explanation", "No explanation provided.")
             answer=json_response.get("answer")
+            print(answer)
+            print(correct_answer)
+            print(explanation)
             if correct_answer != answer:
                 all_correct = False
                 feedback.append({
