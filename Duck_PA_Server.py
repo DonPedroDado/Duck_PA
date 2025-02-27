@@ -424,27 +424,53 @@ def check_Test(test_type: str, questions: list, answers: list):
     all_correct = True
     score = 0
 
-    message3=()
+    message3=(
+        f"You got the questions and the answers to them. The number of a question matches with number of an answer. Check if the answers are correct."
+    )
 
-    for i in zip(questions, answers):
-        for q in questions:
-            append_question = q.get("question")
-            message3.append(f"This is the question {i}: {append_question}")
+    for i, (q, a) in enumerate(zip(questions, answers), start=1):
+        append_question = q.get("question", "N/A")
+        message3 += f"This is the question {i}: {append_question}\n"
 
-        for a in answers:
-            append_answer = a.get("answer")
-            message3.append(f"This is the answer {i}: {append_answer}")
+        if isinstance(a, dict):  # Check if 'a' is a dictionary before calling .get()
+            append_answer = a.get("answer", "N/A")
+        else:
+            append_answer = str(a)
+            
+        message3 += f"This is the answer {i}: {append_answer}\n"
 
-    messages3 += f"You got the questions and the answers to them. The number of a question mathes with number of an answer. Check if the answers are correct."
+        if test_type == "Multiple Choice Tests":
+            append_options = q.get("options", [])
+            message3 += f"These are the options for question {i}: {append_options}\n"
+
+    message3 += """
+                Respond to every question with a JSON. It should look like this:
+
+                {
+                    "questions": "the question",
+                    "answer": "answer the user gave to the question",
+                    "correct_answer": "the right answer"
+                }
+                """
+
+    response3=model.generate_content(message3,
+                                      generation_config={
+                                          'response_mime_type': 'application/json',
+                                      },)
+    
+    json_response=json.loads(response3.text)
+
+
 
     if test_type == "Multiple Choice Tests":
-        for question, answer in zip(questions, answers):
-            correct_answer = question.get("correct_answer")
-            explanation = question.get("explanation", "No explanation provided.")
+        for i in json_response:
+            correct_answer = json_response.get("correct_answer")
+            explanation = json_response.get("explanation", "No explanation provided.")
+            answer=json_response.get("answer")
             if correct_answer != answer:
                 all_correct = False
                 feedback.append({
-                    "question": question.get("question"),
+                    "question": json_response.get("question"),
                     "your_answer": answer,
                     "correct_answer": correct_answer,
                     "explanation": explanation
@@ -452,13 +478,14 @@ def check_Test(test_type: str, questions: list, answers: list):
             else:
                 score += 1
     elif test_type == "True/False Tests":
-        for question, answer in zip(questions, answers):
-            correct_answer = question.get("correct_answer")
-            explanation = question.get("explanation", "No explanation provided.")
+        for i in json_response:
+            correct_answer = json_response.get("correct_answer")
+            explanation = json_response.get("explanation", "No explanation provided.")
+            answer=json_response.get("answer")
             if correct_answer != answer:
                 all_correct = False
                 feedback.append({
-                    "question": question.get("question"),
+                    "question": json_response.get("question"),
                     "your_answer": answer,
                     "correct_answer": correct_answer,
                     "explanation": explanation
@@ -466,13 +493,14 @@ def check_Test(test_type: str, questions: list, answers: list):
             else:
                 score += 1
     elif test_type == "Fill-in-the-Blank Tests":
-        for question, answer in zip(questions, answers):
-            correct_answer = question.get("correct_answer")
-            explanation = question.get("explanation", "No explanation provided.")
+        for i in json_response:
+            correct_answer = json_response.get("correct_answer")
+            explanation = json_response.get("explanation", "No explanation provided.")
+            answer=json_response.get("answer")
             if correct_answer.lower() != answer.lower():  # Case insensitive comparison
                 all_correct = False
                 feedback.append({
-                    "question": question.get("question"),
+                    "question": json_response.get("question"),
                     "your_answer": answer,
                     "correct_answer": correct_answer,
                     "explanation": explanation
