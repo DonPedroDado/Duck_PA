@@ -432,11 +432,11 @@ def check_Test(test_type: str, questions: list, answers: list):
         append_question = q.get("question", "N/A")
         message3 += f"This is the question {i}: {append_question}\n"
 
-        if isinstance(a, dict):  # Check if 'a' is a dictionary before calling .get()
+        if isinstance(a, dict):
             append_answer = a.get("answer", "N/A")
         else:
             append_answer = str(a)
-            
+
         message3 += f"This is the answer {i}: {append_answer}\n"
 
         if test_type == "Multiple Choice Tests":
@@ -459,9 +459,16 @@ def check_Test(test_type: str, questions: list, answers: list):
                                           'response_mime_type': 'application/json',
                                       },)
     
-    json_response=json.loads(response3.text)
+    print("Response from model:", response3.text)
 
-    print(json_response)
+    try:
+        json_response = json.loads(response3.text)
+    except json.JSONDecodeError as e:
+        print(f"Failed to decode JSON: {e}")
+        print("Response content that failed to decode:", response3.text)
+        return False, [], 0
+
+    print("Decoded JSON response:", json_response)
 
     if test_type == "Multiple Choice Tests":
         for i in json_response:
