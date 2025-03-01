@@ -1,0 +1,13 @@
+[project]
+name = "Duck_PA"
+version="0.1.0"
+description="blabla"
+dependencies = [
+    "flask",
+    "genai",
+    "pydantic"
+]
+
+[build-system]
+requires = ["flit_core<4"]
+build-backend = "flit_core.buildapi"
