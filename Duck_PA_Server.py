@@ -151,14 +151,13 @@ def ask_AI(topic: str, teacher: ClassTeacher, question_type: str):
                                         'response_mime_type': 'application/json',
                                     },)
 
-    print(response2)
+
 
     try:
         my_questions = response2.text
         my_questions_json = json.loads(my_questions).get("questions")
         return my_questions_json
     except Exception as e:
-        print(f"Error: {e}")
         return None
 
 
@@ -424,64 +423,67 @@ def check_Test(test_type: str, questions: list, answers: list):
     all_correct = True
     score = 0
 
-    message3=(
-        f"You got the questions and the answers to them. The number of a question matches with number of an answer. Check if the answers are correct."
-    )
+    message3 = """
+        You got the questions and the answers to them. The number of a question matches with the number of an answer. 
+        Check if the answers are correct.
+
+        Here is the list of questions and answers:
+    """
 
     for i, (q, a) in enumerate(zip(questions, answers), start=1):
-        append_question = q.get("question", "N/A")
-        message3 += f"This is the question {i}: {append_question}\n"
-
-        if isinstance(a, dict):
-            append_answer = a.get("answer", "N/A")
-        else:
-            append_answer = str(a)
-
-        message3 += f"This is the answer {i}: {append_answer}\n"
+        question_text = q.get("question", "N/A")
+        answer_text = a.get("answer", "N/A") if isinstance(a, dict) else str(a)
+        
+        message3 += f"""
+        {{
+            "question": "{question_text}",
+            "answer": "{answer_text}"
+        }},
+        """
 
         if test_type == "Multiple Choice Tests":
-            append_options = q.get("options", [])
-            message3 += f"These are the options for question {i}: {append_options}\n"
+            options = q.get("options", [])
+            message3 += f'"options": {options},\n'
 
     message3 += """
-                Respond to every question with a JSON. It should look like this:
-
-                {
-                    "question": "the question",
-                    "answer": "answer the user gave to the question",
-                    "correct_answer": "the right answer",
-                    "explanation": "explanation why the answer is wrong"
-                }
-                """
+        Respond with a JSON **array** of objects. The output should be formatted as follows:
+        
+        [
+            {
+                "question": "The question text",
+                "answer": "The answer provided by the user",
+                "correct_answer": "The correct answer",
+                "explanation": "Explanation for incorrect answers"
+            }
+        ]
+    """
 
     response3=model.generate_content(message3,
-                                      generation_config={
-                                          'response_mime_type': 'application/json',
-                                      },)
+                                    generation_config={
+                                        'response_mime_type': 'application/json',
+                                    },)
     
-    print("Response from model:", response3.text)
+
 
     try:
-        json_response = json.loads(response3.text)
+        json_response = json.loads(response3.text) 
+        if isinstance(json_response, str):  
+            json_response = json.loads(json_response) 
     except json.JSONDecodeError as e:
-        print(f"Failed to decode JSON: {e}")
-        print("Response content that failed to decode:", response3.text)
         return False, [], 0
 
-    print("Decoded JSON response:", json_response)
-
     if test_type == "Multiple Choice Tests":
-        for i in json_response:
-            correct_answer = json_response.get("correct_answer")
-            explanation = json_response.get("explanation", "No explanation provided.")
-            answer=json_response.get("answer")
-            print(answer)
-            print(correct_answer)
-            print(explanation)
+        for item in json_response:
+            if not isinstance(item, dict):
+                continue
+
+            answer = item.get("answer", "No answer provided")
+            correct_answer = item.get("correct_answer", "No correct answer provided")
+            explanation = item.get("explanation", "No explanation provided.")
             if correct_answer != answer:
                 all_correct = False
                 feedback.append({
-                    "question": json_response.get("question"),
+                    "question": item.get("question"),
                     "your_answer": answer,
                     "correct_answer": correct_answer,
                     "explanation": explanation
@@ -489,14 +491,16 @@ def check_Test(test_type: str, questions: list, answers: list):
             else:
                 score += 1
     elif test_type == "True/False Tests":
-        for i in json_response:
-            correct_answer = json_response.get("correct_answer")
-            explanation = json_response.get("explanation", "No explanation provided.")
-            answer=json_response.get("answer")
+        for item in json_response:
+            if not isinstance(item, dict):
+                continue
+            answer = item.get("answer", "No answer provided")
+            correct_answer = item.get("correct_answer", "No correct answer provided")
+            explanation = item.get("explanation", "No explanation provided.")
             if correct_answer != answer:
                 all_correct = False
                 feedback.append({
-                    "question": json_response.get("question"),
+                    "question": item.get("question"),
                     "your_answer": answer,
                     "correct_answer": correct_answer,
                     "explanation": explanation
@@ -504,14 +508,16 @@ def check_Test(test_type: str, questions: list, answers: list):
             else:
                 score += 1
     elif test_type == "Fill-in-the-Blank Tests":
-        for i in json_response:
-            correct_answer = json_response.get("correct_answer")
-            explanation = json_response.get("explanation", "No explanation provided.")
-            answer=json_response.get("answer")
+        for item in json_response:
+            if not isinstance(item, dict):
+                continue
+            answer = item.get("answer", "No answer provided")
+            correct_answer = item.get("correct_answer", "No correct answer provided")
+            explanation = item.get("explanation", "No explanation provided.")
             if correct_answer.lower() != answer.lower():  # Case insensitive comparison
                 all_correct = False
                 feedback.append({
-                    "question": json_response.get("question"),
+                    "question": item.get("question"),
                     "your_answer": answer,
                     "correct_answer": correct_answer,
                     "explanation": explanation
@@ -538,7 +544,6 @@ def generate_test():
     teacher_id = data.get("teacher_id")
     topic = data.get("topic", "")
     test_type = data.get("test_type", "")
-    print(test_type)
     # Find the teacher object
     selected_teacher = None
     for t in teachers:
