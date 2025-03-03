@@ -1,6 +1,7 @@
 from flask import request, jsonify
 from Duck_PA.teachers.classteacher import ClassTeacher
 from Duck_PA.teachers.teachers import teachers
+from Duck_PA import app
 
 @app.route("/create_teacher", methods=["POST"])
 def create_teacher():

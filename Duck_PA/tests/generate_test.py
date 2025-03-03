@@ -1,7 +1,7 @@
 from Duck_PA import app
 from flask import request
 from Duck_PA.teachers.teachers import teachers
-from Duck_PA.ask_ai_for_test import ask_AI_for_test
+from Duck_PA.AI.ask_ai_for_test import ask_AI_for_test
 import re
 
 @app.route("/generate_test", methods=["POST"])
