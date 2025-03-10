@@ -13,6 +13,4 @@ def delete_teacher(teacher_id):
         return jsonify({"error": "Teacher not found"}), 404
     
     teachers = [teacher for teacher in teachers if teacher.id != teacher_id]
-    print(f"Deleted teacher with ID {teacher_id}. Remaining teachers: {[t.id for t in teachers]}")
-    
-    return jsonify({"message": f"{teacher_to_delete.name} deleted successfully"}), 200
+    return jsonify({"message": "Teacher deleted successfully"}), 200
