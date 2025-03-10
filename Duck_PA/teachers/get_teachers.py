@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import jsonify
 from Duck_PA.teachers.teachers import teachers
 from Duck_PA import app
 

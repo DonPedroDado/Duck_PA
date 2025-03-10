@@ -2,19 +2,21 @@ from Duck_PA.AI.genai import model
 from Duck_PA.teachers.classteacher import ClassTeacher
 import json
 
-def ask_AI(topic: str, teacher: ClassTeacher, question_type: str):
+def ask_AI(topic: str, teacher: ClassTeacher, question_type: str, difficulty: str, language: str):
     # model is already initialized globally
     message = (
         f"You must make questions for them. You are teacher called {teacher.name}. "
         f"Your specializations are {', '.join(teacher.specialization)} and your attitude is {teacher.attitude}. "
         f"I want you to create a test about the following topic: {topic}. "
         f"The type of the question is {question_type}."
+        f"This is the difficulty for the test: {difficulty}."
+        f"You must make the questions in {language}."
     )
 
-
+    print(message)
 
     if question_type == "Multiple Choice Tests":
-        message += "You are going to create a Multiple Choice Test. I want you to create 10 questions and for each question to provide 4 possible answers. One is correct, one is almost correct, the other one is neutral and one is clearly wrong."
+        message += "You are going to create a Multiple Choice Test. I want you to create 10 questions and for each question to provide 4 possible answers. One is correct, one is almost correct, the other one is neutral and one is clearly wrong. Be sure that there is only one right answer."
         message += """I want you to return the result as a JSON. The schema of the JSON should be the following: questions": [
                 {
                     "question": "Sample Multiple Choice Question 1",
@@ -28,6 +30,7 @@ def ask_AI(topic: str, teacher: ClassTeacher, question_type: str):
                 }
             ]"""
         message += "You are going to reply only if the JSON described above and NOTHING ELSE. Make sure the question only have one possible answer."
+        message += f"The options must be in {language} too"
 
     elif question_type == "True/False Tests":
         message += "You are going to create a True/False Test. I want you to create 10 questions. Each question should have a sentence and the answer should be either True or False. I want you to return the result as a JSON. The schema of the JSON should be the following:"

@@ -17,6 +17,8 @@ def generate_test():
     teacher_id = data.get("teacher_id")
     topic = data.get("topic", "")
     test_type = data.get("test_type", "")
+    test_difficulty=data.get("test_difficulty", "Normal")
+    test_language=data.get("test_language", "english")
     # Find the teacher object
     selected_teacher = None
     for t in teachers:
@@ -24,8 +26,7 @@ def generate_test():
             selected_teacher = t
             break
 
-    # Call the mock AI function to get the test structure
-    ai_test_data = ask_AI_for_test(selected_teacher, topic, test_type)
+    ai_test_data = ask_AI_for_test(selected_teacher, topic, test_type, difficulty=test_difficulty, language=test_language)
 
     # Now we convert that structured data into HTML
     # We'll do a simple conversion based on the question types
