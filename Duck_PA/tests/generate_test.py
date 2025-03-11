@@ -17,8 +17,8 @@ def generate_test():
     teacher_id = data.get("teacher_id")
     topic = data.get("topic", "")
     test_type = data.get("test_type", "")
-    test_difficulty=data.get("test_difficulty", "Normal")
-    test_language=data.get("test_language", "english")
+    test_difficulty = data.get("test_difficulty", "Normal")
+    test_language = data.get("test_language", "english")
     # Find the teacher object
     selected_teacher = None
     for t in teachers:
@@ -73,12 +73,95 @@ def generate_test():
 <html>
 <head>
     <title>Generated Test</title>
+    <style>
+        body {{
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden; /* Prevents unnecessary scrolling */
+        }}
+        .container {{
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 600px;
+            max-height: 90vh; /* Ensures the content fits within the screen */
+            overflow-y: auto; /* Enables scrolling if content is too long */
+        }}
+        h2 {{
+            color: #333;
+            text-align: center; /* Ensures the title is always centered */
+        }}
+        p {{
+            color: #333;
+        }}
+        input[type="text"], input[type="radio"] {{
+            margin: 10px 0;
+        }}
+        button {{
+            padding: 10px 20px;
+            margin: 10px 5px;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }}
+        button:hover {{
+            background-color: #0056b3;
+        }}
+        .feedback-container {{
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            margin-top: 20px;
+        }}
+        .feedback-container h2 {{
+            color: #333;
+            text-align: center;
+        }}
+        .feedback-container ul {{
+            list-style-type: none;
+            padding: 0;
+        }}
+        .feedback-container li {{
+            background-color: #f9f9f9;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }}
+        .feedback-container li strong {{
+            display: block;
+            margin-bottom: 5px;
+        }}
+        .feedback-container p {{
+            text-align: center;
+            font-weight: bold;
+            color: #333;
+        }}
+    </style>
 </head>
 <body>
-    <form id="test-form" onsubmit="submitTest(event)">
-        {test_content}
-        <button type="submit">Submit Test</button>
-    </form>
+    <div class="container">
+        <form id="test-form" onsubmit="submitTest(event)">
+            {test_content}
+            <button type="submit">Submit Test</button>
+        </form>
+        <button onclick="window.history.back()">Go Back</button>
+    </div>
     <script>
     function submitTest(event) {{
         event.preventDefault();
@@ -129,11 +212,14 @@ def generate_test():
             if (data.all_correct) {{
                 alert("All answers are correct!");
             }} else {{
-                let feedbackHtml = "<h2>Feedback</h2><ul>";
+                let feedbackHtml = `
+                <div class="feedback-container">
+                    <h2>Feedback</h2>
+                    <ul>`;
                 data.feedback.forEach(item => {{
                     feedbackHtml += `<li><strong>Question:</strong> ${{item.question}}<br><strong>Your Answer:</strong> ${{item.your_answer}}<br><strong>Correct Answer:</strong> ${{item.correct_answer}}<br><strong>Explanation:</strong> ${{item.explanation}}</li>`;
                 }});
-                feedbackHtml += `</ul><p><strong>Total Score:</strong> ${{data.score}} out of 10</p>`;
+                feedbackHtml += `</ul><p><strong>Total Score:</strong> ${{data.score}} out of 10</p></div>`;
                 document.open();
                 document.write(feedbackHtml);
                 document.close();
@@ -144,8 +230,6 @@ def generate_test():
         }});
     }}
     </script>
-    <hr>
-    <button onclick="window.history.back()">Go Back</button>
 </body>
 </html>
     """

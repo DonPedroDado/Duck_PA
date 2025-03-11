@@ -304,7 +304,7 @@ def homepage():
         fetch('/generate_test', {
             method: 'POST',
             headers: {
-              'Content-Type': 'application/json'
+            'Content-Type': 'application/json'
             },
             body: JSON.stringify(payload)
         })
@@ -327,7 +327,11 @@ def homepage():
         .then(response => response.json())
         .then(data => {
             alert(data.message);
-            window.location.reload();
+            if (data.message.includes('deleted successfully')) {
+                // Remove the teacher from the DOM
+                const teacherElement = document.querySelector(`input[name="teacher"][value="${teacherId}"]`).parentElement;
+                teacherElement.remove();
+            }
         })
         .catch(err => {
             console.error('Error deleting teacher:', err);
