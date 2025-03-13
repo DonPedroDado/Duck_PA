@@ -2,7 +2,7 @@ from Duck_PA.AI.genai import model
 from Duck_PA.teachers.classteacher import ClassTeacher
 import json
 
-def ask_AI(topic: str, teacher: ClassTeacher, question_type: str, difficulty: str, language: str):
+def ask_AI(topic: str, teacher: ClassTeacher, question_type: str, difficulty: str, language: str, number_of_questions: int):
     # model is already initialized globally
     message = (
         f"You must make questions for them. You are teacher called {teacher.name}. "
@@ -16,7 +16,7 @@ def ask_AI(topic: str, teacher: ClassTeacher, question_type: str, difficulty: st
     print(message)
 
     if question_type == "Multiple Choice Tests":
-        message += "You are going to create a Multiple Choice Test. I want you to create 10 questions and for each question to provide 4 possible answers. One is correct, one is almost correct, the other one is neutral and one is clearly wrong. Be sure that there is only one right answer."
+        message += f"You are going to create a Multiple Choice Test. I want you to create {number_of_questions} questions and for each question to provide 4 possible answers. One is correct, one is almost correct, the other one is neutral and one is clearly wrong. Be sure that there is only one right answer."
         message += """I want you to return the result as a JSON. The schema of the JSON should be the following: questions": [
                 {
                     "question": "Sample Multiple Choice Question 1",
@@ -33,7 +33,7 @@ def ask_AI(topic: str, teacher: ClassTeacher, question_type: str, difficulty: st
         message += f"The options must be in {language} too"
 
     elif question_type == "True/False Tests":
-        message += "You are going to create a True/False Test. I want you to create 10 questions. Each question should have a sentence and the answer should be either True or False. I want you to return the result as a JSON. The schema of the JSON should be the following:"
+        message += f"You are going to create a True/False Test. I want you to create {number_of_questions} questions. Each question should have a sentence and the answer should be either True or False. I want you to return the result as a JSON. The schema of the JSON should be the following:"
         message += """questions": [
                 {
                     "question": "Sample True/False Question 1: The capital of France is Paris.",
@@ -47,7 +47,7 @@ def ask_AI(topic: str, teacher: ClassTeacher, question_type: str, difficulty: st
         message += "You are going to reply only if the JSON described above and NOTHING ELSE"
 
     elif question_type == "Fill-in-the-Blank Tests":
-        message += "You are going to create a Fill-in-the-Blank Test. I want you to create 10 questions. Each question should have a sentence with a blank space. I want you to return the result as a JSON. The schema of the JSON should be the following:"
+        message += f"You are going to create a Fill-in-the-Blank Test. I want you to create {number_of_questions} questions. Each question should have a sentence with a blank space. I want you to return the result as a JSON. The schema of the JSON should be the following:"
         message += """questions": [
                 {
                     "question": "Sample Fill-in-the-Blank Question 1: The capital of France is __________.",
