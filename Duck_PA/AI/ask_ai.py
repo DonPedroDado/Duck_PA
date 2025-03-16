@@ -12,9 +12,6 @@ def ask_AI(topic: str, teacher: ClassTeacher, question_type: str, difficulty: st
         f"This is the difficulty for the test: {difficulty}."
         f"You must make the questions in {language}."
     )
-
-    print(message)
-
     if question_type == "Multiple Choice Tests":
         message += f"You are going to create a Multiple Choice Test. I want you to create {number_of_questions} questions and for each question to provide 4 possible answers. One is correct, one is almost correct, the other one is neutral and one is clearly wrong. Be sure that there is only one right answer."
         message += """I want you to return the result as a JSON. The schema of the JSON should be the following: questions": [
@@ -59,8 +56,11 @@ def ask_AI(topic: str, teacher: ClassTeacher, question_type: str, difficulty: st
                 }
             ]"""
         message += "You are going to reply only if the JSON described above and NOTHING ELSE. Make sure that the excercises yoou maked are understandable and make sure that the excercises you make are specific for the topic. If the topic is something connected to grammar(like tenses, for example:past participle, simple part, and so on) make sure you put the infinitive form in brackets. Make sure to put a blank space in the place where the answer should be."   
+    else:
+        print("invalid question type")
 
 
+    print(message)
 
     response = model.generate_content(message,
                                       generation_config={
@@ -83,6 +83,6 @@ def ask_AI(topic: str, teacher: ClassTeacher, question_type: str, difficulty: st
     try:
         my_questions = response2.text
         my_questions_json = json.loads(my_questions).get("questions")
-        return my_questions_json
+        return my_questions_json if my_questions_json else []
     except Exception as e:
-        return None
+        return []

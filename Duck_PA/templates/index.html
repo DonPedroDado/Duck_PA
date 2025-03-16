@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Duck Practice Assistant</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .teacher-selection-error {
+            color: #dc2626;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+        
+        .teacher-item {
+            position: relative;
+            padding: 1rem;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        
+        .teacher-item:hover {
+            border-color: #93c5fd;
+            background: #f0f9ff;
+        }
+        
+        .teacher-item.selected {
+            border-color: #2563eb;
+            background: #eff6ff;
+        }
+        
+        .teacher-item input[type="radio"] {
+            margin-right: 1rem;
+        }
+        
+        .teacher-item label {
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 1rem;
+        }
+
+        .logo {
+            width: 150px;
+            height: auto;
+            margin-bottom: 1rem;
+            border-radius: 12px;
+            transition: opacity 0.3s ease;
+        }
+
+        .logo.error {
+            display: none;
+        }
+
+        h1 {
+            color: #1e40af;
+            margin: 0;
+            font-size: 1.8rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar">
+        <div class="logo-container">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" 
+                 alt="DuckSoft Logo" 
+                 class="logo"
+                 onerror="this.classList.add('error')"
+                 onload="this.classList.remove('error')">
+            <h1>Duck Practice Assistant</h1>
+        </div>
+        <div class="form-container">
+            <section id="teacher-selection">
+                <h2>1. Choose a Teacher</h2>
+                <div class="teacher-list">
+                    <p>Loading teacher list...</p>
+                </div>
+                <div class="teacher-selection-error" id="teacher-error">
+                    Please select a teacher before generating the test.
+                </div>
+            </section>
+
+            <section class="form-section">
+                <h2>2. Test Details</h2>
+                <div class="form-group">
+                    <label for="test-topic">Topic</label>
+                    <textarea id="test-topic" rows="3" placeholder="Enter test topic" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="test-type">Test Type</label>
+                    <select id="test-type" required>
+                        <option value="Multiple Choice Tests">Multiple Choice</option>
+                        <option value="True/False Tests">True/False</option>
+                        <option value="Fill-in-the-Blank Tests">Fill in the Blank</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="test-difficulty">Difficulty Level</label>
+                    <select id="test-difficulty" required>
+                        <option value="Super Easy">Super Easy</option>
+                        <option value="Easy">Easy</option>
+                        <option value="Normal">Normal</option>
+                        <option value="Hard">Hard</option>
+                        <option value="Very hard">Very Hard</option>
+                        <option value="PhD level">PhD Level</option>
+                        <option value="Even harder than PhD level">Beyond PhD</option>
+                        <option value="Impossible">Impossible</option>
+                        <option value="Super impossible">Super Impossible</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="test-questionsnumber">Number of Questions</label>
+                    <input type="number" id="test-questionsnumber" min="1" max="100" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="test-language">Language</label>
+                    <input type="text" id="test-language" placeholder="e.g., English" value="English" required>
+                </div>
+            </section>
+
+            <div class="button-group">
+                <button class="primary-button" onclick="generateTest()">Generate Test</button>
+                <button class="secondary-button" onclick="window.location.href='/add_teacher'">Add Teacher</button>
+            </div>
+        </div>
+    </div>
+    <div class="content" id="result-area">
+        <div class="welcome-message">
+            <h2>Welcome to the Duck Practice Assistant</h2>
+            <p>Select your options on the left and click "Generate Test" to begin.</p>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+
+</html>

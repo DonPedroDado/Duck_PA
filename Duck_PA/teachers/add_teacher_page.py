@@ -10,52 +10,57 @@ def add_teacher_page():
 <html>
 <head>
     <title>Add Teacher</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e9ecef;
             margin: 0;
             padding: 0;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            overflow: hidden; /* Prevents unnecessary scrolling */
+            min-height: 100vh;
+            overflow: hidden;
         }
         .container {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 80%;
-            max-width: 600px;
-            max-height: 90vh; /* Ensures the content fits within the screen */
-            overflow-y: auto; /* Enables scrolling if content is too long */
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
         }
         h1 {
-            color: #333;
-            text-align: center; /* Ensures the title is always centered */
+            color: #343a40;
+            text-align: center;
+            margin-bottom: 20px;
         }
         label {
             display: block;
             margin-top: 10px;
             font-weight: bold;
+            color: #495057;
         }
         input[type="text"], textarea, select {
             width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-size: 1rem;
         }
         button {
-            padding: 10px 20px;
+            padding: 12px 24px;
             margin: 10px 5px;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             background-color: #007bff;
             color: white;
             cursor: pointer;
+            transition: background-color 0.3s ease;
         }
         button:hover {
             background-color: #0056b3;
@@ -63,41 +68,54 @@ def add_teacher_page():
         .specialization-row {
             display: flex;
             align-items: center;
+            margin-bottom: 10px;
         }
         .specialization-row input {
             margin-right: 10px;
         }
+        @media (max-width: 768px) {
+            .container {
+                width: 95%;
+                padding: 20px;
+            }
+            button {
+                width: 100%;
+                margin: 10px 0;
+            }
+        }
     </style>
 </head>
 <body>
-    <h1>Add a New Teacher</h1>
-    <form id="create-teacher-form" onsubmit="createTeacher(event)">
-        <div>
-            <label for="first-name">First Name:</label>
-            <input type="text" id="first-name" name="first-name" required>
-        </div>
-        <div>
-            <label for="last-name">Last Name:</label>
-            <input type="text" id="last-name" name="last-name" required>
-        </div>
-        <div id="specializations">
-            <label>Specializations:</label>
-            <div class="specialization-row">
-                <input type="text" name="specialization" required>
-                <button type="button" onclick="addSpecialization()">+</button>
+    <div class="container">
+        <h1>Add a New Teacher</h1>
+        <form id="create-teacher-form" onsubmit="createTeacher(event)">
+            <div>
+                <label for="first-name">First Name:</label>
+                <input type="text" id="first-name" name="first-name" required>
             </div>
-        </div>
-        <div>
-            <label>Attitude:</label>
-            <button type="button" onclick="setAttitude('Strict')">Strict</button>
-            <button type="button" onclick="setAttitude('Friendly')">Friendly</button>
-            <button type="button" onclick="setAttitude('Angry')">Angry</button>
-            <button type="button" onclick="setAttitude('Calm')">Calm</button>
-        </div>
-        <input type="hidden" id="attitude" name="attitude" required>
-        <button type="submit">Create Teacher</button>
-    </form>
-    <button onclick="window.location.href='/'">Go Back</button>
+            <div>
+                <label for="last-name">Last Name:</label>
+                <input type="text" id="last-name" name="last-name" required>
+            </div>
+            <div id="specializations">
+                <label>Specializations:</label>
+                <div class="specialization-row">
+                    <input type="text" name="specialization" required>
+                    <button type="button" onclick="addSpecialization()">+</button>
+                </div>
+            </div>
+            <div>
+                <label>Attitude:</label>
+                <button type="button" onclick="setAttitude('Strict')">Strict</button>
+                <button type="button" onclick="setAttitude('Friendly')">Friendly</button>
+                <button type="button" onclick="setAttitude('Angry')">Angry</button>
+                <button type="button" onclick="setAttitude('Calm')">Calm</button>
+            </div>
+            <input type="hidden" id="attitude" name="attitude" required>
+            <button type="submit">Create Teacher</button>
+        </form>
+        <button onclick="window.location.href='/'">Go Back</button>
+    </div>
     <script>
         function addSpecialization() {
             const specializationsDiv = document.getElementById('specializations');
