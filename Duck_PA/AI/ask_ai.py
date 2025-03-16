@@ -83,6 +83,6 @@ def ask_AI(topic: str, teacher: ClassTeacher, question_type: str, difficulty: st
     try:
         my_questions = response2.text
         my_questions_json = json.loads(my_questions).get("questions")
-        return my_questions_json
+        return my_questions_json if my_questions_json else []
     except Exception as e:
-        return None
+        return []

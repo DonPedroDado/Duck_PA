@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>Test Generator 2</title>
+    <title>Duck Practice Assistant</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
@@ -39,12 +39,43 @@
             cursor: pointer;
             flex: 1;
         }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 1rem;
+        }
+
+        .logo {
+            width: 150px;
+            height: auto;
+            margin-bottom: 1rem;
+            border-radius: 12px;
+            transition: opacity 0.3s ease;
+        }
+
+        .logo.error {
+            display: none;
+        }
+
+        h1 {
+            color: #1e40af;
+            margin: 0;
+            font-size: 1.8rem;
+        }
     </style>
 </head>
 
 <body>
     <div class="sidebar">
-        <h1>Test Generator</h1>
+        <div class="logo-container">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" 
+                 alt="DuckSoft Logo" 
+                 class="logo"
+                 onerror="this.classList.add('error')"
+                 onload="this.classList.remove('error')">
+            <h1>Duck Practice Assistant</h1>
+        </div>
         <div class="form-container">
             <section id="teacher-selection">
                 <h2>1. Choose a Teacher</h2>
@@ -57,7 +88,7 @@
             </section>
 
             <section class="form-section">
-                <h2>2. Test Configuration</h2>
+                <h2>2. Test Details</h2>
                 <div class="form-group">
                     <label for="test-topic">Topic</label>
                     <textarea id="test-topic" rows="3" placeholder="Enter test topic" required></textarea>
@@ -106,7 +137,7 @@
     </div>
     <div class="content" id="result-area">
         <div class="welcome-message">
-            <h2>Welcome to the Test Generator</h2>
+            <h2>Welcome to the Duck Practice Assistant</h2>
             <p>Select your options on the left and click "Generate Test" to begin.</p>
         </div>
     </div>

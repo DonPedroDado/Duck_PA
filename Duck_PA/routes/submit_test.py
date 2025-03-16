@@ -1,6 +1,6 @@
 from Duck_PA import app
-from flask import request, jsonify
 from Duck_PA.tests.check_test import check_Test
+from flask import request, jsonify
 
 @app.route("/submit_test", methods=["POST"])
 def submit_test():
