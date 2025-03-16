@@ -9,12 +9,21 @@ function fetchTeachers() {
             const teacherList = document.querySelector('.teacher-list');
             teacherList.innerHTML = '';
 
+            if (data.teachers.length === 0) {
+                teacherList.innerHTML = `
+                    <div class="no-teachers">
+                        <p>No teachers available. Please add a teacher first.</p>
+                    </div>
+                `;
+                return;
+            }
+
             data.teachers.forEach(teacher => {
                 const teacherItem = document.createElement('div');
                 teacherItem.className = 'teacher-item';
                 teacherItem.innerHTML = `
                     <div class="teacher-info">
-                        <input type="radio" name="teacher" value="${teacher.id}" id="teacher-${teacher.id}">
+                        <input type="radio" name="teacher" value="${teacher.id}" id="teacher-${teacher.id}" required>
                         <label for="teacher-${teacher.id}">
                             <strong>${teacher.name}</strong><br>
                             ${teacher.specialization.join(', ')}<br>
@@ -24,18 +33,63 @@ function fetchTeachers() {
                     <button onclick="deleteTeacher(${teacher.id})" class="secondary-button">Delete</button>
                 `;
                 teacherList.appendChild(teacherItem);
+
+                // Add click handler for the entire teacher item
+                teacherItem.addEventListener('click', function(e) {
+                    if (e.target.tagName !== 'BUTTON') {
+                        const radio = this.querySelector('input[type="radio"]');
+                        radio.checked = true;
+                        updateTeacherSelection();
+                    }
+                });
+            });
+
+            // Add change listeners to radio buttons
+            document.querySelectorAll('input[name="teacher"]').forEach(radio => {
+                radio.addEventListener('change', updateTeacherSelection);
             });
         })
         .catch(err => {
             console.error('Error fetching teachers:', err);
+            const teacherList = document.querySelector('.teacher-list');
+            teacherList.innerHTML = '<p>Error loading teachers. Please try again.</p>';
         });
+}
+
+function updateTeacherSelection() {
+    const teacherError = document.getElementById('teacher-error');
+    const selectedTeacher = document.querySelector('input[name="teacher"]:checked');
+    
+    // Update all teacher items
+    document.querySelectorAll('.teacher-item').forEach(item => {
+        const radio = item.querySelector('input[type="radio"]');
+        item.classList.toggle('selected', radio.checked);
+    });
+
+    // Hide error message if a teacher is selected
+    if (selectedTeacher) {
+        teacherError.style.display = 'none';
+    }
 }
 
 function generateTest() {
     const selectedTeacher = document.querySelector('input[name="teacher"]:checked');
+    const teacherError = document.getElementById('teacher-error');
+    
     if (!selectedTeacher) {
-        alert("Please select a teacher first!");
+        teacherError.style.display = 'block';
+        document.getElementById('teacher-selection').scrollIntoView({ behavior: 'smooth' });
         return;
+    }
+
+    // Validate other required fields
+    const requiredFields = ['test-topic', 'test-type', 'test-difficulty', 'test-questionsnumber', 'test-language'];
+    for (const fieldId of requiredFields) {
+        const field = document.getElementById(fieldId);
+        if (!field.value.trim()) {
+            field.focus();
+            return;
+        }
     }
 
     const payload = {
