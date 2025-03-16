@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Generated Test</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        /* Test page specific styles */
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .test-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .test-header h2 {
+            color: #1a365d;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .test-header p {
+            color: #4a5568;
+            font-size: 1rem;
+        }
+
+        .question-container {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            background: #f8fafc;
+        }
+
+        .question-number {
+            font-size: 1.2rem;
+            color: #2563eb;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .question-text {
+            font-size: 1.1rem;
+            color: #1a202c;
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+
+        .options-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .option-item {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .option-item input[type="radio"] {
+            margin-right: 1rem;
+            width: 1.2rem;
+            height: 1.2rem;
+            cursor: pointer;
+        }
+
+        .option-item label {
+            font-size: 1rem;
+            color: #4a5568;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        input[type="text"] {
+            width: 200px;
+            padding: 0.5rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 4px;
+            font-size: 1rem;
+            margin: 0 0.5rem;
+        }
+
+        input[type="text"]:focus {
+            border-color: #2563eb;
+            outline: none;
+        }
+
+        .test-footer {
+            position: sticky;
+            bottom: 0;
+            background: white;
+            padding: 1rem;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 2rem;
+            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-indicator {
+            color: #4a5568;
+            font-size: 0.9rem;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .primary-button {
+            background: #2563eb;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .primary-button:hover {
+            background: #1d4ed8;
+        }
+
+        .secondary-button {
+            background: white;
+            color: #2563eb;
+            padding: 0.75rem 1.5rem;
+            border: 1px solid #2563eb;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .secondary-button:hover {
+            background: #f8fafc;
+        }
+
+        .feedback-container {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            border-radius: 8px;
+            background: #f0f9ff;
+            border: 1px solid #93c5fd;
+            max-width: 800px;
+            margin: 2rem auto;
+        }
+
+        .feedback-container h2 {
+            color: #1e40af;
+            margin-bottom: 1rem;
+            font-size: 1.8rem;
+        }
+
+        .feedback-container p {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            color: #1a202c;
+        }
+
+        .feedback-container ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feedback-container li {
+            margin-bottom: 1.5rem;
+            padding: 1.5rem;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #bfdbfe;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .feedback-container strong {
+            color: #1e40af;
+            display: inline-block;
+            margin-bottom: 0.5rem;
+        }
+
+        .feedback-container li br {
+            margin-bottom: 0.5rem;
+        }
+    </style>
+    <script>
+        console.log('Script is loading...');
+        // Define the function in the global scope
+        window.submitTest = function(event) {
+            console.log('submitTest function called', event);
+            event.preventDefault();
+
+            // Gather the data
+            let testType = document.getElementById('test-type').value;
+            let questionsData = document.getElementById('questions-data').value;
+            console.log('Raw questions data:', questionsData);
+            let questions = JSON.parse(questionsData);
+            let answers = [];
+
+            // Example of collecting answers
+            questions.forEach((question, idx) => {
+                let answer;
+                if (question.type === "fill_in_the_blank") {
+                    answer = [];
+                    let blanks = document.querySelectorAll(`input[name^='q${idx + 1}_blank']`);
+                    blanks.forEach(blank => {
+                        answer.push(blank.value);
+                    });
+                    answers.push(answer.join(" "));
+                } else {
+                    answer = document.querySelector(`input[name='q${idx + 1}']:checked`);
+                    if (answer) {
+                        answers.push(answer.value);
+                    } else {
+                        let textAnswer = document.querySelector(`input[name='q${idx + 1}']`);
+                        if (textAnswer) {
+                            answers.push(textAnswer.value);
+                        }
+                    }
+                }
+            });
+
+            let payload = {
+                test_type: testType,
+                questions: questions,
+                answers: answers
+            };
+
+            // Update submit button to show loading state
+            const submitButton = document.querySelector('button[type="submit"]');
+            const originalText = submitButton.textContent;
+            submitButton.textContent = 'Submitting...';
+            submitButton.disabled = true;
+
+            fetch('/submit_test', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.all_correct) {
+                        const feedbackHtml = `
+                        <div class="feedback-container">
+                            <h2>Congratulations! 🎉</h2>
+                            <p>All your answers are correct! You've scored ${questions.length} out of ${questions.length}.</p>
+                        </div>`;
+                        document.getElementById('test-form').innerHTML = feedbackHtml;
+                    } else {
+                        let feedbackHtml = `
+                        <div class="feedback-container">
+                            <h2>Test Results</h2>
+                            <p><strong>Score:</strong> ${data.score} out of ${questions.length}</p>
+                            <ul>`;
+                        data.feedback.forEach(item => {
+                            feedbackHtml += `
+                            <li>
+                                <strong>Question:</strong> ${item.question}<br>
+                                <strong>Your Answer:</strong> ${item.your_answer}<br>
+                                <strong>Correct Answer:</strong> ${item.correct_answer}<br>
+                                <strong>Explanation:</strong> ${item.explanation}
+                            </li>`;
+                        });
+                        feedbackHtml += `</ul></div>`;
+                        document.getElementById('test-form').innerHTML = feedbackHtml;
+                    }
+                })
+                .catch(err => {
+                    console.error('Error submitting test:', err);
+                    alert('There was an error submitting your test. Please try again.');
+                })
+                .finally(() => {
+                    // Reset button state
+                    submitButton.textContent = originalText;
+                    submitButton.disabled = false;
+                });
+        };
+
+        // Add event listeners for radio buttons to update progress
+        window.addEventListener('DOMContentLoaded', () => {
+            const questions = JSON.parse(document.getElementById('questions-data').value);
+            const totalQuestions = questions.length;
+            const progressText = document.getElementById('progress-text');
+            
+            function updateProgress() {
+                const answered = document.querySelectorAll('input[type="radio"]:checked, input[type="text"]:not(:placeholder-shown)').length;
+                progressText.textContent = `${answered} of ${totalQuestions} questions answered`;
+            }
+
+            // Add change listeners to all inputs
+            document.querySelectorAll('input[type="radio"], input[type="text"]').forEach(input => {
+                input.addEventListener('change', updateProgress);
+            });
+
+            // Initial progress update
+            updateProgress();
+        });
+
+        console.log('submitTest function defined:', typeof window.submitTest);
+    </script>
+</head>
+
+<body>
+    <div class="content">
+        <div class="test-container">
+            <div class="test-header">
+                <h2>{{ title }}</h2>
+                <p>Teacher: {{ teacher_name }}</p>
+            </div>
+            <form id="test-form" onsubmit="return submitTest(event)">
+                <input type="hidden" id="test-type" value="{{ test_type }}">
+                <input type="hidden" id="questions-data" value='{{ questions|tojson|safe }}'>
+                
+                {% for question in questions %}
+                {% set outer_loop = loop %}
+                <div class="question-container">
+                    <div class="question-number">Question {{ outer_loop.index }}</div>
+                    <div class="question-text">{{ question.question }}</div>
+                    {% if question.type == 'multiple_choice' %}
+                    <ul class="options-list">
+                        {% for option in question.options %}
+                        <li class="option-item">
+                            <input type="radio" name="q{{ outer_loop.index }}" id="q{{ outer_loop.index }}_opt{{ loop.index }}" value="{{ option }}">
+                            <label for="q{{ outer_loop.index }}_opt{{ loop.index }}">{{ option }}</label>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% elif question.type == 'true_false' %}
+                    <ul class="options-list">
+                        <li class="option-item">
+                            <input type="radio" name="q{{ outer_loop.index }}" id="q{{ outer_loop.index }}_true" value="True">
+                            <label for="q{{ outer_loop.index }}_true">True</label>
+                        </li>
+                        <li class="option-item">
+                            <input type="radio" name="q{{ outer_loop.index }}" id="q{{ outer_loop.index }}_false" value="False">
+                            <label for="q{{ outer_loop.index }}_false">False</label>
+                        </li>
+                    </ul>
+                    {% elif question.type == 'fill_in_the_blank' %}
+                    <div class="fill-blank-container">
+                        {% set question_text = question.question %}
+                        {% set blanks = question_text.split('__________') %}
+                        {% for part in blanks %}
+                            {{ part }}
+                            {% if not loop.last %}
+                            <input type="text" name="q{{ outer_loop.index }}_blank{{ loop.index }}" placeholder="Fill in the blank">
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+
+                <div class="test-footer">
+                    <div class="progress-indicator">
+                        <span id="progress-text">0 of {{ questions|length }} questions answered</span>
+                    </div>
+                    <div class="button-group">
+                        <button type="button" class="secondary-button" onclick="window.history.back()">Go Back</button>
+                        <button type="submit" class="primary-button">Submit Test</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>

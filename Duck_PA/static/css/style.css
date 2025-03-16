@@ -1,0 +1,135 @@
+:root {
+    --primary-color: #2563eb;
+    --secondary-color: #1e40af;
+    --background-color: #f1f5f9;
+    --sidebar-color: #ffffff;
+    --text-color: #1e293b;
+    --border-color: #e2e8f0;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 400px;
+    background: var(--sidebar-color);
+    padding: 2rem;
+    border-right: 1px solid var(--border-color);
+    height: 100vh;
+    overflow-y: auto;
+    position: fixed;
+}
+
+.content {
+    margin-left: 400px;
+    flex-grow: 1;
+    padding: 2rem;
+    background: var(--background-color);
+}
+
+h1 {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+    color: var(--text-color);
+}
+
+h2 {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    color: var(--text-color);
+}
+
+.form-section {
+    margin-bottom: 2rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+input,
+select,
+textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    background: white;
+    font-size: 1rem;
+}
+
+.button-group {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+button {
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.primary-button {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+}
+
+.primary-button:hover {
+    background: var(--secondary-color);
+}
+
+.secondary-button {
+    background: white;
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+}
+
+.secondary-button:hover {
+    background: var(--background-color);
+}
+
+.teacher-list {
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.teacher-item {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.teacher-item:last-child {
+    border-bottom: none;
+}
+
+.welcome-message {
+    text-align: center;
+    padding: 3rem;
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}

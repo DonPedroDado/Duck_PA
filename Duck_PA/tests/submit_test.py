@@ -9,11 +9,21 @@ def submit_test():
     Returns a JSON response indicating if the answers are correct.
     """
     data = request.get_json()
-    test_type = data.get("test_type", "")
+    
+    if not data:
+        return jsonify({"error": "No data received"}), 400
+        
+    test_type = data.get("test_type")
     questions = data.get("questions", [])
     answers = data.get("answers", [])
+    
+    if not all([test_type, questions, answers]):
+        return jsonify({"error": "Missing required data"}), 400
 
-    # Use the check_Test function to evaluate the answers
     all_correct, feedback, score = check_Test(test_type, questions, answers)
-
-    return jsonify({"all_correct": all_correct, "feedback": feedback, "score": score})
+    
+    return jsonify({
+        "all_correct": all_correct,
+        "feedback": feedback,
+        "score": score
+    })
