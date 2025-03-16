@@ -99,11 +99,15 @@ def homepage():
         <div>
             <h2>4. Select the difficulty of the test:</h2>
             <select id="test-difficulty">
+                <option value="Super Easy">Super easy</option>
                 <option value="Easy">Easy</option>
                 <option value="Normal">Normal</option>
                 <option value="Hard">Hard</option>
                 <option value="Very hard">Very hard</option>
                 <option value="PhD level">PhD level</option>
+                <option value="Even harder than PhD level">Even harder than PhD level</option>
+                <option value="Impossible">Impossible</option>
+                <option value="Super impossible">Super impossible</option>
             </select>
         </div>
 

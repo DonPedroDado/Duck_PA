@@ -272,7 +272,7 @@ def generate_test():
                 data.feedback.forEach(item => {{
                     feedbackHtml += `<li><strong>Question:</strong> ${{item.question}}<br><strong>Your Answer:</strong> ${{item.your_answer}}<br><strong>Correct Answer:</strong> ${{item.correct_answer}}<br><strong>Explanation:</strong> ${{item.explanation}}</li>`;
                 }});
-                feedbackHtml += `</ul><p><strong>Total Score:</strong> ${{data.score}} out of 10</p></div>
+                feedbackHtml += `</ul><p><strong>Total Score:</strong> ${{data.score}} out of {test_number_of_questions}</p></div>
                 </body>
                 </html>`;
                 document.open();

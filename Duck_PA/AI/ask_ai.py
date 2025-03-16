@@ -29,7 +29,7 @@ def ask_AI(topic: str, teacher: ClassTeacher, question_type: str, difficulty: st
                     "options": ["Option A", "Option B", "Option C", "Option D"]
                 }
             ]"""
-        message += "You are going to reply only if the JSON described above and NOTHING ELSE. Make sure the question only have one possible answer."
+        message += "You are going to reply only if the JSON described above and NOTHING ELSE. Make sure that there is a right answer and that the questions only have one right answer."
         message += f"The options must be in {language} too"
 
     elif question_type == "True/False Tests":
