@@ -13,45 +13,105 @@
             display: none;
         }
         
-        .teacher-item {
-            position: relative;
-            padding: 1rem;
-            border: 2px solid transparent;
+        .teacher-card {
+            background: #fff;
+            padding: 0.75rem;
             border-radius: 8px;
-            transition: all 0.2s;
-        }
-        
-        .teacher-item:hover {
-            border-color: #93c5fd;
-            background: #f0f9ff;
-        }
-        
-        .teacher-item.selected {
-            border-color: #2563eb;
-            background: #eff6ff;
-        }
-        
-        .teacher-item input[type="radio"] {
-            margin-right: 1rem;
-        }
-        
-        .teacher-item label {
-            cursor: pointer;
-            flex: 1;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            margin-bottom: 0.5rem;
         }
 
+        .teacher-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1e40af;
+            margin-bottom: 0.25rem;
+        }
+
+        .teacher-specialization {
+            color: #4b5563;
+            margin-bottom: 0.25rem;
+            font-size: 0.9rem;
+        }
+
+        .teacher-attitude {
+            color: #6b7280;
+            font-style: italic;
+            font-size: 0.9rem;
+        }
+
+        .teacher-actions {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .teacher-dropdown {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            margin-top: 1rem;
+            background-color: white;
+            cursor: pointer;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+        }
+
+        .add-teacher-btn {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            background-color: #4f46e5;
+            color: white;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .add-teacher-btn:hover {
+            background-color: #4338ca;
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .delete-btn:hover {
+            color: #dc2626;
+        }
+        
         .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem 2rem;
+            margin-bottom: 1rem;
+            background: #fff;
             text-align: center;
-            margin-bottom: 2rem;
-            padding: 1rem;
         }
 
         .logo {
-            width: 150px;
+            width: 50px;
             height: auto;
-            margin-bottom: 1rem;
-            border-radius: 12px;
-            transition: opacity 0.3s ease;
+            border-radius: 8px;
+            margin: 0;
         }
 
         .logo.error {
@@ -61,7 +121,130 @@
         h1 {
             color: #1e40af;
             margin: 0;
-            font-size: 1.8rem;
+            font-size: 1.5rem;
+            flex: 1;
+            text-align: center;
+        }
+
+        h2 {
+            margin: 0;
+            font-size: 1.25rem;
+            color: #1f2937;
+        }
+
+        .button-group {
+            margin-top: auto;
+            padding: 1rem 2rem;
+            position: sticky;
+            bottom: 0;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .primary-button {
+            padding: 0.75rem 2rem;
+            background-color: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            width: 100%;
+            max-width: 200px;
+        }
+
+        .primary-button:hover {
+            background-color: #4338ca;
+        }
+
+        .form-container {
+            flex: 1;
+            padding: 0 2rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #4b5563;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 0.875rem;
+        }
+
+        #teacher-selection {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .sidebar {
+            min-width: 450px;
+            width: 450px;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background: #fff;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .divider {
+            width: 4px;
+            height: 100vh;
+            background: #e5e7eb;
+            position: fixed;
+            left: 450px;
+            top: 0;
+            cursor: col-resize;
+            z-index: 100;
+            transition: background-color 0.2s;
+        }
+
+        .divider:hover {
+            background: #4f46e5;
+        }
+
+        .content {
+            margin-left: 454px;
+            padding: 2rem;
+            min-height: 100vh;
+            background: #f9fafb;
+        }
+
+        .welcome-message {
+            padding: 1.5rem 0;
+        }
+
+        body {
+            margin: 0;
+            overflow-x: hidden;
+            user-select: none;
         }
     </style>
 </head>
@@ -78,9 +261,19 @@
         </div>
         <div class="form-container">
             <section id="teacher-selection">
-                <h2>1. Choose a Teacher</h2>
+                <div class="section-header">
+                    <h2>1. Choose a Teacher</h2>
+                    <button class="add-teacher-btn" onclick="window.location.href='/add_teacher'" title="Add New Teacher">+</button>
+                </div>
                 <div class="teacher-list">
-                    <p>Loading teacher list...</p>
+                    <div class="teacher-card" id="default-teacher">
+                        <div class="teacher-name">Rachel Green</div>
+                        <div class="teacher-specialization">Physics, Chemistry</div>
+                        <div class="teacher-attitude">Strict</div>
+                    </div>
+                    <select class="teacher-dropdown" onchange="selectTeacher(this.value)">
+                        <option value="">Select another teacher...</option>
+                    </select>
                 </div>
                 <div class="teacher-selection-error" id="teacher-error">
                     Please select a teacher before generating the test.
@@ -108,7 +301,7 @@
                     <select id="test-difficulty" required>
                         <option value="Super Easy">Super Easy</option>
                         <option value="Easy">Easy</option>
-                        <option value="Normal">Normal</option>
+                        <option value="Normal" selected>Normal</option>
                         <option value="Hard">Hard</option>
                         <option value="Very hard">Very Hard</option>
                         <option value="PhD level">PhD Level</option>
@@ -120,7 +313,7 @@
 
                 <div class="form-group">
                     <label for="test-questionsnumber">Number of Questions</label>
-                    <input type="number" id="test-questionsnumber" min="1" max="100" required>
+                    <input type="number" id="test-questionsnumber" min="1" max="100" value="5" required>
                 </div>
 
                 <div class="form-group">
@@ -131,10 +324,10 @@
 
             <div class="button-group">
                 <button class="primary-button" onclick="generateTest()">Generate Test</button>
-                <button class="secondary-button" onclick="window.location.href='/add_teacher'">Add Teacher</button>
             </div>
         </div>
     </div>
+    <div class="divider"></div>
     <div class="content" id="result-area">
         <div class="welcome-message">
             <h2>Welcome to the Duck Practice Assistant</h2>
@@ -142,6 +335,31 @@
         </div>
     </div>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        const sidebar = document.querySelector('.sidebar');
+        const divider = document.querySelector('.divider');
+        const content = document.querySelector('.content');
+        let isDragging = false;
+
+        divider.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            document.body.style.cursor = 'col-resize';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+
+            const newWidth = Math.max(450, e.clientX);
+            sidebar.style.width = newWidth + 'px';
+            divider.style.left = newWidth + 'px';
+            content.style.marginLeft = (newWidth + 4) + 'px';
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            document.body.style.cursor = '';
+        });
+    </script>
 </body>
 
 </html>

@@ -6,11 +6,18 @@ function fetchTeachers() {
     fetch('/get_teachers')
         .then(response => response.json())
         .then(data => {
-            const teacherList = document.querySelector('.teacher-list');
-            teacherList.innerHTML = '';
+            const teacherDropdown = document.querySelector('.teacher-dropdown');
+            const defaultTeacher = document.getElementById('default-teacher');
+            
+            // Clear existing options except the placeholder
+            while (teacherDropdown.options.length > 1) {
+                teacherDropdown.remove(1);
+            }
 
             if (data.teachers.length === 0) {
-                teacherList.innerHTML = `
+                defaultTeacher.style.display = 'none';
+                teacherDropdown.style.display = 'none';
+                document.querySelector('.teacher-list').innerHTML = `
                     <div class="no-teachers">
                         <p>No teachers available. Please add a teacher first.</p>
                     </div>
@@ -18,65 +25,83 @@ function fetchTeachers() {
                 return;
             }
 
+            // Add all teachers except Rachel Green to the dropdown
             data.teachers.forEach(teacher => {
-                const teacherItem = document.createElement('div');
-                teacherItem.className = 'teacher-item';
-                teacherItem.innerHTML = `
-                    <div class="teacher-info">
-                        <input type="radio" name="teacher" value="${teacher.id}" id="teacher-${teacher.id}" required>
-                        <label for="teacher-${teacher.id}">
-                            <strong>${teacher.name}</strong><br>
-                            ${teacher.specialization.join(', ')}<br>
-                            <em>${teacher.attitude}</em>
-                        </label>
-                    </div>
-                    <button onclick="deleteTeacher(${teacher.id})" class="secondary-button">Delete</button>
-                `;
-                teacherList.appendChild(teacherItem);
-
-                // Add click handler for the entire teacher item
-                teacherItem.addEventListener('click', function(e) {
-                    if (e.target.tagName !== 'BUTTON') {
-                        const radio = this.querySelector('input[type="radio"]');
-                        radio.checked = true;
-                        updateTeacherSelection();
-                    }
-                });
+                if (teacher.id !== 2) { // Rachel Green's ID
+                    const option = document.createElement('option');
+                    option.value = teacher.id;
+                    option.textContent = `${teacher.name} (${teacher.specialization.join(', ')})`;
+                    teacherDropdown.appendChild(option);
+                }
             });
 
-            // Add change listeners to radio buttons
-            document.querySelectorAll('input[name="teacher"]').forEach(radio => {
-                radio.addEventListener('change', updateTeacherSelection);
-            });
+            // Set Rachel Green as selected by default
+            const rachelGreen = data.teachers.find(t => t.id === 2);
+            if (rachelGreen) {
+                defaultTeacher.querySelector('.teacher-name').textContent = rachelGreen.name;
+                defaultTeacher.querySelector('.teacher-specialization').textContent = rachelGreen.specialization.join(', ');
+                defaultTeacher.querySelector('.teacher-attitude').textContent = rachelGreen.attitude;
+                defaultTeacher.dataset.teacherId = rachelGreen.id;
+                defaultTeacher.style.display = 'block';
+                document.getElementById('teacher-error').style.display = 'none';
+            } else {
+                defaultTeacher.style.display = 'none';
+            }
         })
         .catch(err => {
             console.error('Error fetching teachers:', err);
-            const teacherList = document.querySelector('.teacher-list');
-            teacherList.innerHTML = '<p>Error loading teachers. Please try again.</p>';
+            document.querySelector('.teacher-list').innerHTML = '<p>Error loading teachers. Please try again.</p>';
         });
 }
 
-function updateTeacherSelection() {
-    const teacherError = document.getElementById('teacher-error');
-    const selectedTeacher = document.querySelector('input[name="teacher"]:checked');
-    
-    // Update all teacher items
-    document.querySelectorAll('.teacher-item').forEach(item => {
-        const radio = item.querySelector('input[type="radio"]');
-        item.classList.toggle('selected', radio.checked);
-    });
+function selectTeacher(teacherId) {
+    if (!teacherId) return;
 
-    // Hide error message if a teacher is selected
-    if (selectedTeacher) {
-        teacherError.style.display = 'none';
+    fetch('/get_teachers')
+        .then(response => response.json())
+        .then(data => {
+            const teacher = data.teachers.find(t => t.id === parseInt(teacherId));
+            if (teacher) {
+                const defaultTeacher = document.getElementById('default-teacher');
+                defaultTeacher.querySelector('.teacher-name').textContent = teacher.name;
+                defaultTeacher.querySelector('.teacher-specialization').textContent = teacher.specialization.join(', ');
+                defaultTeacher.querySelector('.teacher-attitude').textContent = teacher.attitude;
+                defaultTeacher.dataset.teacherId = teacher.id;
+                document.getElementById('teacher-error').style.display = 'none';
+            }
+        });
+}
+
+function deleteTeacher(teacherId) {
+    if (!confirm('Are you sure you want to delete this teacher?')) {
+        return;
     }
+
+    fetch(`/delete_teacher/${teacherId}`, {
+        method: 'DELETE'
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message.includes('deleted successfully')) {
+                fetchTeachers();
+                // If we deleted the currently displayed teacher, clear the display
+                const defaultTeacher = document.getElementById('default-teacher');
+                if (defaultTeacher.querySelector('.delete-btn').getAttribute('onclick').includes(teacherId)) {
+                    defaultTeacher.style.display = 'none';
+                }
+            }
+        })
+        .catch(err => {
+            console.error('Error deleting teacher:', err);
+        });
 }
 
 function generateTest() {
-    const selectedTeacher = document.querySelector('input[name="teacher"]:checked');
+    const defaultTeacher = document.getElementById('default-teacher');
+    const teacherId = defaultTeacher.dataset.teacherId;
     const teacherError = document.getElementById('teacher-error');
     
-    if (!selectedTeacher) {
+    if (!teacherId || defaultTeacher.style.display === 'none') {
         teacherError.style.display = 'block';
         document.getElementById('teacher-selection').scrollIntoView({ behavior: 'smooth' });
         return;
@@ -93,7 +118,7 @@ function generateTest() {
     }
 
     const payload = {
-        teacher_id: selectedTeacher.value,
+        teacher_id: teacherId,
         topic: document.getElementById('test-topic').value,
         test_type: document.getElementById('test-type').value,
         test_difficulty: document.getElementById('test-difficulty').value,
@@ -120,24 +145,4 @@ function generateTest() {
     // Add the form to the body and submit it
     document.body.appendChild(form);
     form.submit();
-}
-
-function deleteTeacher(teacherId) {
-    if (!confirm('Are you sure you want to delete this teacher?')) {
-        return;
-    }
-
-    fetch(`/delete_teacher/${teacherId}`, {
-        method: 'DELETE'
-    })
-        .then(response => response.json())
-        .then(data => {
-            alert(data.message);
-            if (data.message.includes('deleted successfully')) {
-                fetchTeachers();
-            }
-        })
-        .catch(err => {
-            console.error('Error deleting teacher:', err);
-        });
 }
