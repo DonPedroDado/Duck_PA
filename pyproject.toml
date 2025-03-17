@@ -1,7 +1,7 @@
 [project]
 name = "Duck_PA"
 version="0.1.0"
-description="blabla"
+description="Duck practice assistant helps students learn topics through excercises."
 dependencies = [
     "flask",
     "genai",
