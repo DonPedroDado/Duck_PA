@@ -6,7 +6,7 @@ function submitTest(event) {
     let questions = JSON.parse(document.getElementById('questions-data').value);
     let answers = [];
 
-    // Example of collecting answers
+    // Collect answers for all question types, including essay
     questions.forEach((question, idx) => {
         let answer;
         if (question.type === "fill_in_the_blank") {
@@ -16,6 +16,13 @@ function submitTest(event) {
                 answer.push(blank.value);
             });
             answers.push(answer.join(" "));
+        } else if (question.type === "essay") {
+            let essayAnswer = document.querySelector(`textarea[name='q${idx + 1}']`);
+            if (essayAnswer) {
+                answers.push(essayAnswer.value);
+            } else {
+                answers.push("");
+            }
         } else {
             answer = document.querySelector(`input[name='q${idx + 1}']:checked`);
             if (answer) {
@@ -24,6 +31,8 @@ function submitTest(event) {
                 let textAnswer = document.querySelector(`input[name='q${idx + 1}']`);
                 if (textAnswer) {
                     answers.push(textAnswer.value);
+                } else {
+                    answers.push("");
                 }
             }
         }
@@ -52,7 +61,11 @@ function submitTest(event) {
                     <h2>Feedback</h2>
                     <ul>`;
                 data.feedback.forEach(item => {
-                    feedbackHtml += `<li><strong>Question:</strong> ${item.question}<br><strong>Your Answer:</strong> ${item.your_answer}<br><strong>Correct Answer:</strong> ${item.correct_answer}<br><strong>Explanation:</strong> ${item.explanation}</li>`;
+                    feedbackHtml += `<li><strong>Question:</strong> ${item.question}<br><strong>Your Answer:</strong> ${item.your_answer}<br>`;
+                    if (item.correct_answer !== undefined) {
+                        feedbackHtml += `<strong>Correct Answer:</strong> ${item.correct_answer}<br>`;
+                    }
+                    feedbackHtml += `<strong>Explanation:</strong> ${item.explanation}</li>`;
                 });
                 feedbackHtml += `</ul><p><strong>Total Score:</strong> ${data.score} out of ${questions.length}</p></div>`;
                 document.getElementById('test-form').innerHTML = feedbackHtml;
@@ -61,4 +74,4 @@ function submitTest(event) {
         .catch(err => {
             console.error('Error submitting test:', err);
         });
-} 
+}

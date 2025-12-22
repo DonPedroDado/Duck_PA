@@ -13,7 +13,7 @@ def ask_AI(topic: str, teacher: ClassTeacher, question_type: str, difficulty: st
         f"You must make the questions in {language}."
     )
     if question_type == "Multiple Choice Tests":
-        message += f"You are going to create a Multiple Choice Test. I want you to create {number_of_questions} questions and for each question to provide 4 possible answers. One is correct, one is almost correct, the other one is neutral and one is clearly wrong. Be sure that there is only one right answer."
+        message += f"You are going to create a Multiple Choice Test. I want you to create {number_of_questions} questions and for each question to provide 4 possible answers. One is correct, one is almost correct, the other one is neutral and one is clearly wrong. Be sure that there is only one right answer. Be sure that one answer is right. It must not happen that neither of the options is right."
         message += """I want you to return the result as a JSON. The schema of the JSON should be the following: questions": [
                 {
                     "question": "Sample Multiple Choice Question 1",
@@ -56,11 +56,27 @@ def ask_AI(topic: str, teacher: ClassTeacher, question_type: str, difficulty: st
                 }
             ]"""
         message += "You are going to reply only if the JSON described above and NOTHING ELSE. Make sure that the excercises yoou maked are understandable and make sure that the excercises you make are specific for the topic. If the topic is something connected to grammar(like tenses, for example:past participle, simple part, and so on) make sure you put the infinitive form in brackets. Make sure to put a blank space in the place where the answer should be."   
+    elif question_type == "Essay Tests":
+        message += f"You are going to create an Essay Test. I want you to create {number_of_questions} essay questions. Each question should require a detailed written answer. I want you to return the result as a JSON. The schema of the JSON should be the following:"
+        message += """questions": [
+                {
+                    "question": "Sample Essay Question 1: Discuss the impact of climate change on global agriculture.",
+                    "type": "essay"
+                },
+                {
+                    "question": "Another Essay Question: Explain the significance of the Renaissance in European history.",
+                    "type": "essay"
+                }
+            ]"""
+        message += "You are going to reply only with the JSON described above and NOTHING ELSE. Make sure the questions are open-ended and require thoughtful, detailed responses."
     else:
         print("invalid question type")
 
 
     print(message)
+
+
+    
 
     response = model.generate_content(message,
                                       generation_config={

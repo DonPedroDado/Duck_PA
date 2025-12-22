@@ -21,6 +21,12 @@ def ask_AI_for_test(teacher, topic, test_type, difficulty, language, number_of_q
             "teacher_type": str(teacher),
             "questions": response,
         }
+    elif test_type == "Essay Tests":
+        return {
+            "title": f"{test_type} on {topic}",
+            "teacher_type": str(teacher),
+            "questions": response,
+        }
     else:
         return {
             "title": f"Unknown Test Type on {topic}",

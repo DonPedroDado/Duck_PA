@@ -5,12 +5,12 @@ from flask import request, render_template, json
 from Duck_PA.teachers.teachers import teachers
 import re
 
-@app.route("/generate_test", methods=["POST"])
+@app.route("/generate_test", methods=["GET", "POST"])
 def generate_test():
     """
     Accepts form data with {teacher_id, topic, test_type}
     Returns a new HTML page containing the generated test.
-    We'll now use ask_AI_for_text to simulate calling an AI service
+    We'll now use ask_AI_for_test to simulate calling an AI service
     for generating the actual test content in a structured format,
     then we'll convert that into an HTML layout.
     """
@@ -29,16 +29,31 @@ def generate_test():
             selected_teacher = t
             break
 
-    ai_test_data = ask_AI_for_test(selected_teacher, topic, test_type, difficulty=test_difficulty, language=test_language, number_of_questions=test_number_of_questions)
+    # Error handling for missing teacher
+    if selected_teacher is None:
+        return render_template(
+            'generated_test.html',
+            title="No Teacher Selected",
+            teacher_name="Unknown",
+            test_content="<p>No teacher selected or teacher not found.</p>",
+            test_type=test_type,
+            questions=[],
+            test_number_of_questions=test_number_of_questions
+        )
+
+    ai_test_data = ask_AI_for_test(
+        selected_teacher, topic, test_type,
+        difficulty=test_difficulty,
+        language=test_language,
+        number_of_questions=test_number_of_questions
+    )
 
     # Now we convert that structured data into HTML
-    # We'll do a simple conversion based on the question types
     title = ai_test_data.get("title", "No Title")
     questions = ai_test_data.get("questions", [])
 
     # Ensure questions is a valid JSON-serializable list
     try:
-        # Test JSON serialization
         json.dumps(questions)
     except Exception as e:
         print(f"Error serializing questions: {e}")
@@ -48,10 +63,8 @@ def generate_test():
     # Let's build the HTML content step by step
     test_content = ""
     if not questions:
-        # If the AI returned no questions (e.g., unknown test type)
         test_content += "<p>No questions available or unknown test type.</p>"
     else:
-        # Loop through questions and build HTML
         for idx, q in enumerate(questions, start=1):
             question_text = q.get("question", "Untitled Question")
             question_type = q.get("type", "unknown")
@@ -67,17 +80,23 @@ def generate_test():
                 test_content += f"<input type='radio' name='q{idx}' value='True'> True\n"
                 test_content += f"<input type='radio' name='q{idx}' value='False'> False\n<hr>"
             elif question_type == "fill_in_the_blank":
-                # Replace each blank with an input box using regex
-                question_text = re.sub(r"__________", lambda m, idx=idx: f"<input type='text' name='q{idx}_blank{m.start()}' style='width:100px;'>", question_text)
+                question_text = re.sub(
+                    r"__________",
+                    lambda m, idx=idx: f"<input type='text' name='q{idx}_blank{m.start()}' style='width:100px;'>",
+                    question_text
+                )
                 test_content += f"<p><strong>Question {idx}:</strong> {question_text}</p><hr>"
+            elif question_type == "essay":
+                test_content += f"<p><strong>Question {idx}:</strong> {question_text}</p>\n"
+                test_content += f"<textarea name='q{idx}' rows='6' cols='80' placeholder='Write your answer here...'></textarea><hr>"
             else:
-                # If we don't recognize the question type
                 test_content += f"<p><strong>Question {idx} (Unknown type):</strong> {question_text}</p><hr>"
 
-    return render_template('generated_test.html', 
-                         title=title, 
-                         teacher_name=selected_teacher.name, 
-                         test_content=test_content, 
-                         test_type=test_type, 
-                         questions=questions, 
-                         test_number_of_questions=test_number_of_questions)
+    return render_template(
+        'generated_test.html',
+        title=title,
+        teacher_name=selected_teacher.name,
+        test_content=test_content,
+        test_type=test_type,
+        questions=questions,
+        test_number_of_questions=test_number_of_questions)
