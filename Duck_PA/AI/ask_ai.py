@@ -71,6 +71,7 @@ def ask_AI(topic: str, teacher: ClassTeacher, question_type: str, difficulty: st
         message += "You are going to reply only with the JSON described above and NOTHING ELSE. Make sure the questions are open-ended and require thoughtful, detailed responses."
     else:
         print("invalid question type")
+        return []
 
 
     print(message)
@@ -89,7 +90,7 @@ def ask_AI(topic: str, teacher: ClassTeacher, question_type: str, difficulty: st
         f"Check the output and fix the json. Like the questions and the explanations and so on."
     )    
 
-    response2 = model.generate_content(message,
+    response2 = model.generate_content(message2,
                                     generation_config={
                                         'response_mime_type': 'application/json',
                                     },)
@@ -98,7 +99,19 @@ def ask_AI(topic: str, teacher: ClassTeacher, question_type: str, difficulty: st
 
     try:
         my_questions = response2.text
-        my_questions_json = json.loads(my_questions).get("questions")
-        return my_questions_json if my_questions_json else []
+        # Try to parse JSON response
+        parsed_response = json.loads(my_questions)
+        my_questions_json = parsed_response.get("questions", [])
+        
+        if not my_questions_json:
+            print(f"Warning: No questions found in response")
+            return []
+        
+        return my_questions_json
+    except json.JSONDecodeError as e:
+        print(f"Error parsing JSON response: {e}")
+        print(f"Response text: {response2.text}")
+        return []
     except Exception as e:
+        print(f"Unexpected error in ask_AI: {e}")
         return []

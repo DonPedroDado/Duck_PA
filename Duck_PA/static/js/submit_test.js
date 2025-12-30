@@ -55,23 +55,39 @@ function submitTest(event) {
         .then(data => {
             if (data.all_correct) {
                 alert("All answers are correct!");
-            } else {
                 let feedbackHtml = `
                 <div class="feedback-container">
                     <h2>Feedback</h2>
+                    <p style="color: green; font-weight: bold;">🎉 Congratulations! All answers are correct!</p>
+                    <p><strong>Total Score:</strong> ${data.score} out of ${questions.length}</p>
+                </div>`;
+                document.getElementById('test-form').innerHTML = feedbackHtml;
+            } else {
+                let feedbackHtml = `
+                <div class="feedback-container">
+                    <h2>Wrong Answers</h2>
                     <ul>`;
+                
+                // Only show wrong answers
                 data.feedback.forEach(item => {
-                    feedbackHtml += `<li><strong>Question:</strong> ${item.question}<br><strong>Your Answer:</strong> ${item.your_answer}<br>`;
-                    if (item.correct_answer !== undefined) {
-                        feedbackHtml += `<strong>Correct Answer:</strong> ${item.correct_answer}<br>`;
+                    if (!item.is_correct) {
+                        feedbackHtml += `<li>
+                            <strong>Question:</strong> ${item.question || 'N/A'}<br>
+                            <strong style="color: #dc2626;">Your Answer:</strong> ${item.your_answer || 'N/A'}<br>`;
+                        if (item.correct_answer !== undefined && item.correct_answer !== null) {
+                            feedbackHtml += `<strong style="color: #16a34a;">Correct Answer:</strong> ${item.correct_answer}<br>`;
+                        }
+                        feedbackHtml += `<strong>Explanation:</strong> ${item.explanation || 'N/A'}<br>
+                        </li>`;
                     }
-                    feedbackHtml += `<strong>Explanation:</strong> ${item.explanation}</li>`;
                 });
+                
                 feedbackHtml += `</ul><p><strong>Total Score:</strong> ${data.score} out of ${questions.length}</p></div>`;
                 document.getElementById('test-form').innerHTML = feedbackHtml;
             }
         })
         .catch(err => {
             console.error('Error submitting test:', err);
+            alert('Error submitting test: ' + err.message);
         });
 }

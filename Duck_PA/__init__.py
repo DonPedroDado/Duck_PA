@@ -1,6 +1,12 @@
 from flask import Flask
+import os
 
-app = Flask(__name__)
+# Get the absolute path to the Duck_PA directory
+basedir = os.path.abspath(os.path.dirname(__file__))
+
+app = Flask(__name__,
+            template_folder=os.path.join(basedir, 'templates'),
+            static_folder=os.path.join(basedir, 'static'))
 
 from Duck_PA.teachers.get_teachers import *
 from Duck_PA.teachers.delete_teacher import *
