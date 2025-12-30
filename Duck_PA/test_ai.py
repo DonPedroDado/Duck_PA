@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from Duck_PA.AI.ask_ai_for_test import ask_AI_for_test
+from Duck_PA.AI.generate_test_helpers import ask_AI_for_test
 from Duck_PA.teachers.classteacher import ClassTeacher
 import json
 

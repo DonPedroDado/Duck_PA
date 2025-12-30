@@ -1,13 +1,10 @@
 from Duck_PA import app
-from Duck_PA.tests.check_test import check_Test
+from Duck_PA.AI.TestChecker_Agent import check_test_with_agent
+from Duck_PA.teachers.teachers import get_teacher_by_id
 from flask import request, jsonify
 
 @app.route("/submit_test", methods=["POST"])
 def submit_test():
-    """
-    Accepts JSON with {test_type, questions, answers}
-    Returns a JSON response indicating if the answers are correct.
-    """
     data = request.get_json()
     
     if not data:
@@ -16,12 +13,20 @@ def submit_test():
     test_type = data.get("test_type")
     questions = data.get("questions", [])
     answers = data.get("answers", [])
+    teacher_id = data.get("teacher_id")
     
-    if not all([test_type, questions, answers]):
+    if not all([test_type, questions, answers, teacher_id]):
         return jsonify({"error": "Missing required data"}), 400
 
-    all_correct, feedback, score = check_Test(test_type, questions, answers)
+    teacher = get_teacher_by_id(teacher_id)
+    if teacher is None:
+        return jsonify({"error": "Invalid teacher_id"}), 400
+
+    feedback = check_test_with_agent(questions, answers, teacher, test_type)
     
+    score = sum(1 for f in feedback if f.get("is_correct"))
+    all_correct = score == len(feedback)
+
     return jsonify({
         "all_correct": all_correct,
         "feedback": feedback,
