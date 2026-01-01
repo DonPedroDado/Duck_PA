@@ -1,35 +1,86 @@
-from google.adk.agents.llm_agent import Agent
-from Duck_PA.AI.TestCreating_Agent.make_message_for_TestCreating_Agent import make_message
-from Duck_PA.teachers.classteacher import ClassTeacher
+import asyncio
 import json
 
-def ask_for_test(topic: str, teacher: ClassTeacher, question_type: str, difficulty: str, language: str, number_of_questions: int):
-    message, personality = make_message(topic, teacher, question_type, difficulty, language, number_of_questions)
+from Duck_PA.AI.TestCreating_Agent.make_message_for_TestCreating_Agent import make_message
+from Duck_PA.teachers.classteacher import ClassTeacher
 
-    TestCreating_Agent = Agent(
-        model='gemini-2.5-flash-lite',
-        name='TestCreating_Agent',
+from google.adk.agents.llm_agent import Agent
+from google.adk.runners import InMemoryRunner
+from google.genai.types import Content, Part
+from google.adk.sessions import InMemorySessionService
+
+import re
+import json
+
+def extract_json(text: str) -> str:
+    """Remove Markdown ```json or ``` fences from agent output."""
+    text = re.sub(r"^```json\s*", "", text.strip())
+    text = re.sub(r"^```\s*", "", text.strip())
+    text = re.sub(r"```\s*$", "", text.strip())
+    return text
+
+def normalize_questions(parsed):
+    """
+    Ensure we return a list of question dicts.
+    Accepts either a list or a dict with 'questions'.
+    """
+    if isinstance(parsed, list) and all(isinstance(q, dict) and "question" in q for q in parsed):
+        return parsed
+    if isinstance(parsed, dict) and "questions" in parsed and isinstance(parsed["questions"], list):
+        return parsed["questions"]
+    print(f"Warning: unexpected JSON structure, returning empty list. Parsed: {parsed}")
+    return []
+
+
+_SESSION_SERVICE = InMemorySessionService()
+_APP_USER_ID = "system"
+_APP_APP_NAME = "duck_pa"
+
+async def _run_agent(agent: Agent, prompt: str) -> str:
+    session = await _SESSION_SERVICE.create_session(
+        app_name=_APP_APP_NAME,
+        user_id=_APP_USER_ID,
+        session_id="default"
+    )
+
+    runner = InMemoryRunner(agent, app_name=_APP_APP_NAME)
+    runner.session_service = _SESSION_SERVICE
+
+    content = Content(parts=[Part(text=prompt)])
+
+    async for event in runner.run_async(user_id=session.user_id, session_id=session.id, new_message=content):
+        if event.is_final_response():
+            return "".join(part.text for part in event.content.parts if getattr(part, "text", None))
+
+    raise RuntimeError("Agent did not return a final response")
+
+
+def ask_for_test(topic: str, teacher: ClassTeacher, question_type: str, difficulty: str, language: str, number_of_questions: int):
+    message, instruction, personality = make_message(topic, teacher, question_type, difficulty, language, number_of_questions)
+
+    agent = Agent(
+        model="gemini-2.5-flash",
+        name="TestCreating_Agent",
         description=personality,
-        instruction=message,
+        instruction=instruction
     )
 
     try:
-        response = TestCreating_Agent.ask(message)
+        response_text = asyncio.run(_run_agent(agent, message))
+        response_text = extract_json(response_text)
+        parsed = json.loads(response_text)
 
-        parsed = json.loads(response.text)
-        questions = parsed.get("questions", [])
-
-        if not questions:
-            print("Warning: No questions found in response.")
+        if isinstance(parsed, dict):
+            return parsed.get("questions", [])
+        elif isinstance(parsed, list):
+            return parsed  # assume list is already the questions
+        else:
+            print(f"Unexpected JSON structure: {parsed}")
             return []
 
-        return questions
-
     except json.JSONDecodeError as e:
-        print(f"Error parsing JSON response: {e}")
-        print(f"Response text: {response.text}")
+        print(f"JSON parse error: {e}\nResponse: {response_text}")
         return []
-
     except Exception as e:
-        print(f"Unexpected error while asking agent: {e}")
+        print(f"Unexpected agent error: {e}")
         return []

@@ -1,5 +1,5 @@
-from Duck_PA.AI.TestCreating_Agent.ask_for_test import ask_for_test
-from Duck_PA.AI.TestCreatingChecker_Agent.review_test import review_test
+from Duck_PA.AI.TestCreating_Agent.TestCreating_Agent import ask_for_test
+from Duck_PA.AI.TestCreatingChecker_Agent.TestCreatingChecker_Agent import review_test
 from Duck_PA.teachers.classteacher import ClassTeacher
 
 def generate_and_review_test(topic: str, teacher: ClassTeacher, question_type: str, difficulty: str, language: str, number_of_questions: int):

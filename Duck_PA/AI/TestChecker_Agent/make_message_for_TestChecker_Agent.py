@@ -11,6 +11,10 @@ def make_message_for_TestChecker_Agent(questions: list, answers: list, teacher: 
             "user_answer": a
         })
 
+    instruction = (
+        f"You must follow these instruction given below."
+    )
+
     personality = (
         f"You are an AI assistant that acts as a knowledgeable {teacher.name} "
         f"with specializations in {', '.join(teacher.specialization)} and attitude '{teacher.attitude}'. "
@@ -19,8 +23,11 @@ def make_message_for_TestChecker_Agent(questions: list, answers: list, teacher: 
 
     if test_type == "Essay Tests":
         message = (
-            f"You got the questions and the answers to them. The number of a question matches with the number of an answer. "
             f"Questions and answers: {json.dumps(qa_pairs, indent=2)}\n"
+        )
+        
+        instruction += (
+            f"You got the questions and the answers to them. The number of a question matches with the number of an answer. "
             "For each essay question, evaluate the user's answer based on:\n"
             "1. Relevance to the question\n"
             "2. Completeness and depth\n"
@@ -33,12 +40,15 @@ def make_message_for_TestChecker_Agent(questions: list, answers: list, teacher: 
         )
     else:
         message = (
-            f"You got the questions and the answers to them. The number of a question matches with the number of an answer. "
             f"Questions and answers: {json.dumps(qa_pairs, indent=2)}\n"
+        )
+
+        instruction += (
+            f"You got the questions and the answers to them. The number of a question matches with the number of an answer. "
             "For each question, evaluate if the user's answer is correct. "
             "Return ONLY a valid JSON array with fields: question_number, question, user_answer, is_correct, correct_answer, explanation. "
             "Do not include any text before or after the JSON array. "
             "Ensure all strings are properly formatted with escaped characters."
         )
 
-    return message, personality
+    return message, instruction, personality

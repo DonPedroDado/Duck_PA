@@ -12,13 +12,17 @@ def make_message(topic: str, teacher: ClassTeacher, question_type: str, difficul
         f"You must make the questions in {language}."
     )
 
+    instruction = (
+        f"You must follow these instruction given below."
+    )
+
     if question_type == "Multiple Choice Tests":
         message += (
             f" You are going to create a Multiple Choice Test. I want you to create {number_of_questions} questions and for each question provide 4 possible answers: "
             f"one is correct, one is almost correct, the other one is neutral and one is clearly wrong. "
             f"Be sure there is only one right answer."
         )
-        message += """ I want you to return the result as a JSON. The schema of the JSON should be the following: "questions": [
+        instruction += """ I want you to return the result as a JSON. The schema of the JSON should be the following: "questions": [
                 {
                     "question": "Sample Multiple Choice Question 1",
                     "type": "multiple_choice",
@@ -30,13 +34,14 @@ def make_message(topic: str, teacher: ClassTeacher, question_type: str, difficul
                     "options": ["Option A", "Option B", "Option C", "Option D"]
                 }
             ]"""
-        message += f" You are going to reply only with the JSON described above and NOTHING ELSE. The options must be in {language} too."
+        instruction += f" You are going to reply only with the JSON described above and NOTHING ELSE."
+        message += f"The test must be in {language}."
 
     elif question_type == "True/False Tests":
         message += (
             f" You are going to create a True/False Test. I want you to create {number_of_questions} questions. Each question should have a sentence and the answer should be either True or False."
         )
-        message += """ I want you to return the result as a JSON. The schema of the JSON should be the following: "questions": [
+        instruction += """ I want you to return the result as a JSON. The schema of the JSON should be the following: "questions": [
                 {
                     "question": "Sample True/False Question 1: The capital of France is Paris.",
                     "type": "true_false"
@@ -46,13 +51,13 @@ def make_message(topic: str, teacher: ClassTeacher, question_type: str, difficul
                     "type": "true_false"
                 }
             ]"""
-        message += " You are going to reply only with the JSON described above and NOTHING ELSE."
+        instruction += " You are going to reply only with the JSON described above and NOTHING ELSE."
 
     elif question_type == "Fill-in-the-Blank Tests":
         message += (
             f" You are going to create a Fill-in-the-Blank Test. I want you to create {number_of_questions} questions. Each question should have a sentence with a blank space."
         )
-        message += """ I want you to return the result as a JSON. The schema of the JSON should be the following: "questions": [
+        instruction += """ I want you to return the result as a JSON. The schema of the JSON should be the following: "questions": [
                 {
                     "question": "Sample Fill-in-the-Blank Question 1: The capital of France is __________.",
                     "type": "fill_in_the_blank"
@@ -62,7 +67,7 @@ def make_message(topic: str, teacher: ClassTeacher, question_type: str, difficul
                     "type": "fill_in_the_blank"
                 }
             ]"""
-        message += " You are going to reply only with the JSON described above and NOTHING ELSE. Make sure the exercises are understandable and specific to the topic."
+        instruction += " You are going to reply only with the JSON described above and NOTHING ELSE. Make sure the exercises are understandable and specific to the topic."
 
     elif question_type == "Essay Tests":
         message += (
@@ -78,11 +83,11 @@ def make_message(topic: str, teacher: ClassTeacher, question_type: str, difficul
                     "type": "essay"
                 }
             ]"""
-        message += " You are going to reply only with the JSON described above and NOTHING ELSE. Make sure the questions are open-ended and require thoughtful, detailed responses."
+        instruction += " You are going to reply only with the JSON described above and NOTHING ELSE. Make sure the questions are open-ended and require thoughtful, detailed responses."
 
     else:
         print("Invalid question type")
         return []
 
     print(message)
-    return message, personality
+    return message, instruction, personality

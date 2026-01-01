@@ -1,5 +1,5 @@
 from Duck_PA import app
-from Duck_PA.AI.TestChecker_Agent import check_test_with_agent
+from Duck_PA.AI.TestChecker_Agent.TestChecker_Agent import check_test_with_agent
 from Duck_PA.teachers.teachers import get_teacher_by_id
 from flask import request, jsonify
 
