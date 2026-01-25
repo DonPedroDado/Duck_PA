@@ -109,23 +109,6 @@ button {
     background: var(--background-color);
 }
 
-.teacher-list {
-    background: white;
-    border: 1px solid var(--border-color);
-    border-radius: 0.5rem;
-    padding: 1rem;
-    margin-bottom: 1.5rem;
-}
-
-.teacher-item {
-    padding: 1rem;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.teacher-item:last-child {
-    border-bottom: none;
-}
-
 .welcome-message {
     text-align: center;
     padding: 3rem;

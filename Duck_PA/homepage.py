@@ -5,8 +5,7 @@ from Duck_PA import app
 def homepage():
     """
     Returns the main page which is divided into:
-      a) Teacher selection (info + radio button or some control to choose).
-      b) A text area to specify the test topic.
-      c) A selection for the type of test.
+      a) A text area to specify the test topic.
+      b) A selection for the type of test.
     """
     return render_template('index.html')

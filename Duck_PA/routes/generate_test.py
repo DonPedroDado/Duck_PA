@@ -1,48 +1,26 @@
 from Duck_PA import app
 from Duck_PA.AI.ask_ai_for_test import ask_AI_for_test
-from Duck_PA.teachers.teachers import get_teacher_by_id
 from flask import request, render_template, json
-from Duck_PA.teachers.teachers import teachers
 import re
 
 @app.route("/generate_test", methods=["GET", "POST"])
 def generate_test():
     """
-    Accepts form data with {teacher_id, topic, test_type}
+    Accepts form data with {topic, test_type}
     Returns a new HTML page containing the generated test.
     We'll now use ask_AI_for_test to simulate calling an AI service
     for generating the actual test content in a structured format,
     then we'll convert that into an HTML layout.
     """
     # Get data from form
-    teacher_id = request.form.get("teacher_id")
     topic = request.form.get("topic", "")
     test_type = request.form.get("test_type", "")
     test_difficulty = request.form.get("test_difficulty", "Normal")
     test_language = request.form.get("test_language", "english")
     test_number_of_questions = request.form.get("test_questionsnumber", 10)
 
-    # Find the teacher object
-    selected_teacher = None
-    for t in teachers:
-        if str(t.id) == str(teacher_id):
-            selected_teacher = t
-            break
-
-    # Error handling for missing teacher
-    if selected_teacher is None:
-        return render_template(
-            'generated_test.html',
-            title="No Teacher Selected",
-            teacher_name="Unknown",
-            test_content="<p>No teacher selected or teacher not found.</p>",
-            test_type=test_type,
-            questions=[],
-            test_number_of_questions=test_number_of_questions
-        )
-
     ai_test_data = ask_AI_for_test(
-        selected_teacher, topic, test_type,
+        topic, test_type,
         difficulty=test_difficulty,
         language=test_language,
         number_of_questions=test_number_of_questions
@@ -95,7 +73,6 @@ def generate_test():
     return render_template(
         'generated_test.html',
         title=title,
-        teacher_name=selected_teacher.name,
         test_content=test_content,
         test_type=test_type,
         questions=questions,

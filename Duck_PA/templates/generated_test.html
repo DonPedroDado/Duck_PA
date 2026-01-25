@@ -44,7 +44,6 @@
             <div class="test-container">
                 <div class="test-header">
                     <h2>{{ title }}</h2>
-                    <p>Teacher: {{ teacher_name }}</p>
                 </div>
                 <form id="test-form" method="post" action="/submit_test" onsubmit="return submitTest(event)">
                     <input type="hidden" id="test-type" name="test_type" value="{{ test_type }}">

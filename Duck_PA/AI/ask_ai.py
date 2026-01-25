@@ -1,12 +1,9 @@
 from Duck_PA.AI.genai import model
-from Duck_PA.teachers.classteacher import ClassTeacher
 import json
 
-def ask_AI(topic: str, teacher: ClassTeacher, question_type: str, difficulty: str, language: str, number_of_questions: int):
+def ask_AI(topic: str, question_type: str, difficulty: str, language: str, number_of_questions: int):
     # model is already initialized globally
     message = (
-        f"You must make questions for them. You are teacher called {teacher.name}. "
-        f"Your specializations are {', '.join(teacher.specialization)} and your attitude is {teacher.attitude}. "
         f"I want you to create a test about the following topic: {topic}. "
         f"The type of the question is {question_type}."
         f"This is the difficulty for the test: {difficulty}."
